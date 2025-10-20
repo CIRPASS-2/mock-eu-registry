@@ -3,10 +3,8 @@ package it.extrared.registry.metadata;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDateTime;
 
-/**
- * Data class representing a DPPMetadata entry.
- */
-public class DPPMetadata {
+/** Data class representing a DPPMetadata entry. */
+public class DPPMetadataEntry {
 
     private String registryId;
 
@@ -16,11 +14,11 @@ public class DPPMetadata {
 
     private JsonNode metadata;
 
-    public DPPMetadata(JsonNode metadata) {
+    public DPPMetadataEntry(JsonNode metadata) {
         this.metadata = metadata;
     }
 
-    public DPPMetadata() {}
+    public DPPMetadataEntry() {}
 
     public String getRegistryId() {
         return registryId;

@@ -21,9 +21,10 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * Implementation of a {@link JsonSchemaLoader} loading a json schema from a URI. The URI must be provided using the configuration property
- * {@link MetadataRegistryConfig#jsonSchemaLocation()} i.e. registry.json-schema-location. The value must be either a file
- * URI (file:/path/to/the/schema.json), a relative file path or an HTTP url.
+ * Implementation of a {@link JsonSchemaLoader} loading a json schema from a URI. The URI must be
+ * provided using the configuration property {@link MetadataRegistryConfig#jsonSchemaLocation()}
+ * i.e. registry.json-schema-location. The value must be either a file URI
+ * (file:/path/to/the/schema.json), a relative file path or an HTTP url.
  */
 @ApplicationScoped
 public class URIJsonSchemaLoader extends AbstractJsonSchemaLoader {
@@ -36,7 +37,7 @@ public class URIJsonSchemaLoader extends AbstractJsonSchemaLoader {
         Optional<String> location = config.jsonSchemaLocation();
         Uni<JsonNode> result;
         if (location.isEmpty()) {
-            result = Uni.createFrom().item(null);
+            result = Uni.createFrom().item(() -> null);
         } else {
             result =
                     Uni.createFrom()

@@ -9,7 +9,7 @@ import io.vertx.mutiny.sqlclient.Tuple;
 import it.extrared.registry.MetadataRegistryConfig;
 import it.extrared.registry.jsonschema.Schema;
 import it.extrared.registry.jsonschema.SchemaCache;
-import it.extrared.registry.metadata.DPPMetadata;
+import it.extrared.registry.metadata.DPPMetadataEntry;
 import it.extrared.registry.metadata.DPPMetadataRepository;
 import it.extrared.registry.utils.SQLClientUtils;
 import it.extrared.registry.utils.UUIDUtils;
@@ -39,27 +39,27 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
             """;
 
     @Override
-    public Uni<DPPMetadata> findByUpi(SqlConnection conn, String upi) {
+    public Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi) {
         String sql =
                         """
                 SELECT registry_id,metadata,created_at,modified_at
                 FROM dpp_metadata WHERE metadata ->> '%s' = $1 ORDER BY created_at DESC LIMIT 1
                 """
                         .formatted(config.upiFieldName());
-        Uni<RowSet<DPPMetadata>> rs =
+        Uni<RowSet<DPPMetadataEntry>> rs =
                 conn.preparedQuery(sql).mapping(ROW_MAPPER).execute(Tuple.of(upi));
         return rs.map(SQLClientUtils::firstOrNull);
     }
 
     @Override
-    public Uni<DPPMetadata> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters) {
+    public Uni<DPPMetadataEntry> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters) {
         String sql =
                 """
                 SELECT registry_id,metadata,created_at,modified_at
                 FROM dpp_metadata WHERE %s ORDER BY created_at DESC LIMIT 1
                 """;
         List<Object> params = filters.stream().map(Tuple2::getItem2).toList();
-        Uni<RowSet<DPPMetadata>> rs =
+        Uni<RowSet<DPPMetadataEntry>> rs =
                 schemaCache
                         .get()
                         .map(s -> jsonFilter(filters, s))
@@ -72,7 +72,7 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     }
 
     @Override
-    public Uni<DPPMetadata> save(SqlConnection conn, DPPMetadata metadata) {
+    public Uni<DPPMetadataEntry> save(SqlConnection conn, DPPMetadataEntry metadata) {
         metadata.setRegistryId(UUIDUtils.generateTimeBasedUUID());
         metadata.setCreatedAt(LocalDateTime.now());
         metadata.setModifiedAt(LocalDateTime.now());
@@ -88,7 +88,7 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     }
 
     @Override
-    public Uni<DPPMetadata> update(SqlConnection con, DPPMetadata metadata) {
+    public Uni<DPPMetadataEntry> update(SqlConnection con, DPPMetadataEntry metadata) {
         metadata.setModifiedAt(LocalDateTime.now());
         String upi = metadata.getMetadata().get(config.upiFieldName()).asText();
         Uni<RowSet<Row>> row =

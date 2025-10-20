@@ -9,17 +9,17 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Merge two JSON object overriding properties in a JSON with the values of corresponding properties of a second JSON if those
- * properties are non-null.
+ * Merge two JSON object overriding properties in a JSON with the values of corresponding properties
+ * of a second JSON if those properties are non-null.
  */
 public class JsonMerger {
 
     /**
-     * Merge two JSON following the below logic:
-     * - if overlay JSON has a non-null non-empty primitive value property that value is set to the corresponding
-     * property in the base JSON.
-     * - if the overlay JSON has a non-null non-empty array of primitive property the values in the array are added to the corresponding
-     * array of properties in the base node.
+     * Merge two JSON following the below logic: - if overlay JSON has a non-null non-empty
+     * primitive value property that value is set to the corresponding property in the base JSON. -
+     * if the overlay JSON has a non-null non-empty array of primitive property the values in the
+     * array are added to the corresponding array of properties in the base node.
+     *
      * @param base base JSON to be overrided.
      * @param overlay overlay JSON providing overriding values.
      * @return the merged result i.e. the base JSON with updated values.

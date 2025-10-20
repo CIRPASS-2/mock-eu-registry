@@ -5,8 +5,8 @@ import io.smallrye.mutiny.Uni;
 import java.util.function.Function;
 
 /**
- * Abstract implementation of a {@link it.extrared.registry.jsonschema.JsonSchemaLoader} providing reusable logic
- * between different schema loaders.
+ * Abstract implementation of a {@link it.extrared.registry.jsonschema.JsonSchemaLoader} providing
+ * reusable logic between different schema loaders.
  */
 public abstract class AbstractJsonSchemaLoader implements JsonSchemaLoader {
 
@@ -23,13 +23,15 @@ public abstract class AbstractJsonSchemaLoader implements JsonSchemaLoader {
         Function<JsonNode, Uni<? extends JsonNode>> doNextWhenNull =
                 jn -> {
                     if (jn == null) return next.loadSchema();
-                    else return Uni.createFrom().item(() -> null);
+                    else return Uni.createFrom().item(() -> jn);
                 };
         return schema.flatMap(doNextWhenNull);
     }
 
     /**
-     * Subclasses must implement this method to perform their custom logic that actually loads the json schema.
+     * Subclasses must implement this method to perform their custom logic that actually loads the
+     * json schema.
+     *
      * @return a json schema as a {@link io.smallrye.mutiny.Uni<JsonNode>}
      */
     protected abstract Uni<JsonNode> loadSchemaInternal();

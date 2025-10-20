@@ -15,18 +15,17 @@
         <dependency>
             <groupId>it.extrared</groupId>
             <artifactId>dpp-metadata-registry-api-rest</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>it.extrared</groupId>
             <artifactId>dpp-metadata-registry-pgsql-datastore</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>it.extrared</groupId>
             <artifactId>dpp-metadata-registry-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>it.extrared</groupId>
-            <artifactId>dpp-metadata-registry</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

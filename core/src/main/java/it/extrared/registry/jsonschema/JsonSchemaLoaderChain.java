@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Chain of schema loader that executes the loaders by priority order untile a DPP metadata JSON schema is retrieved.
+ * Chain of schema loader that executes the loaders by priority order untile a DPP metadata JSON
+ * schema is retrieved.
  */
 @ApplicationScoped
 public class JsonSchemaLoaderChain {
@@ -47,18 +48,18 @@ public class JsonSchemaLoaderChain {
 
     /**
      * Load the DPP metadata schema executing loader by loader until one provides it.
+     *
      * @return the {@link Schema} instance.
      */
     public Uni<Schema> loadSchema() {
         Uni<JsonSchema> uniSchema = head.loadSchema().map(JN_TO_SCHEMA);
-         return uniSchema.map(
-                        s -> {
-                            Schema schema=new Schema(s,config);
-                            List<String> msgs=schema.validateSchemaCompliancy();
-                            if (!msgs.isEmpty())
-                                throw new JsonSchemaException(String.join(". ", msgs));
-                            return schema;
-                        });
+        return uniSchema.map(
+                s -> {
+                    Schema schema = new Schema(s, config);
+                    List<String> msgs = schema.validateSchemaCompliancy();
+                    if (!msgs.isEmpty()) throw new JsonSchemaException(String.join(". ", msgs));
+                    return schema;
+                });
     }
 
     // builds the chain of schema loaders.

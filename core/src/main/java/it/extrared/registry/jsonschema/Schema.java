@@ -13,7 +13,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A wrapper of a {@link com.networknt.schema.JsonSchema} that adds some method for validation and for schema fields retrieval.
+ * A wrapper of a {@link com.networknt.schema.JsonSchema} that adds some method for validation and
+ * for schema fields retrieval.
  */
 public class Schema {
 
@@ -37,11 +38,16 @@ public class Schema {
 
     /**
      * Validate a JSON against the underlying JSON schema.
+     *
      * @param data the data to validate.
      * @return the set of {@link ValidationMessage}, empty if the validation was successful.
      */
     public Set<ValidationMessage> validateJson(JsonNode data) {
         return schema.validate(data);
+    }
+
+    public JsonNode getSchema() {
+        return schema.getSchemaNode();
     }
 
     public String getPropertyType(String propertyName) {
@@ -62,9 +68,12 @@ public class Schema {
     }
 
     /**
-     * Validate the schema compliancy with some constraints posed by the DPP metadata handling, eg. that a UPI key
-     * has been provided, that all the fields listed in the registry.autocomplete.enabled.for list properties actually present
-     * in the schema and that all the properties defined in the schema are either of primitive type either of an array of primitive type.
+     * Validate the schema compliancy with some constraints posed by the DPP metadata handling, eg.
+     * that a UPI key has been provided, that all the fields listed in the
+     * registry.autocomplete.enabled.for list properties actually present in the schema and that all
+     * the properties defined in the schema are either of primitive type either of an array of
+     * primitive type.
+     *
      * @return a List of messages with validation errors, empty if the validation was successful.
      */
     public List<String> validateSchemaCompliancy() {
@@ -127,22 +136,25 @@ public class Schema {
     private boolean isValidPropertyType(JsonNode propertySchema) {
         JsonNode typeNode = propertySchema.get("type");
         if (!nodeIsNotNull(typeNode)) return false;
-
-        if (typeIsNotCompliant(typeNode, propertySchema)) return false;
-        if (typeNode.isArray())
-            for (JsonNode type : typeNode)
-                if (typeIsNotCompliant(type, propertySchema)) return false;
-        return true;
+        return !typeIsNotCompliant(typeNode, propertySchema);
     }
 
     private boolean typeIsNotCompliant(JsonNode type, JsonNode propertySchema) {
         if (type.isTextual()) return !isPrimitiveOrArrayOfPrimitive(type.asText(), propertySchema);
-        else return true;
+        else if (type instanceof ArrayNode an) {
+            for (JsonNode n : an) {
+                if (!isPrimitiveOrArrayOfPrimitive(n.asText(), propertySchema)) return true;
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private boolean isPrimitiveOrArrayOfPrimitive(String type, JsonNode propertySchema) {
         return PRIMITIVE_TYPES.contains(type)
-                || ("array".equals(type) && isArrayOfPrimitives(propertySchema));
+                || ("array".equals(type) && isArrayOfPrimitives(propertySchema))
+                || "null".equals(type);
     }
 
     private boolean isArrayOfPrimitives(JsonNode arraySchema) {

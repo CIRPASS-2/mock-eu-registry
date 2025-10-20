@@ -12,7 +12,8 @@ import java.io.InputStream;
 import java.util.function.Supplier;
 
 /**
- * Implementation of a {@link JsonSchemaLoader} loading the schema from the classpath (resources folder).
+ * Implementation of a {@link JsonSchemaLoader} loading the schema from the classpath (resources
+ * folder).
  */
 @ApplicationScoped
 public class ClassPathJsonSchemaLoader extends AbstractJsonSchemaLoader {

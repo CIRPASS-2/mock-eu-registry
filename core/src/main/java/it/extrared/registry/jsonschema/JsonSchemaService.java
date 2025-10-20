@@ -8,10 +8,9 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class JsonSchemaService {
 
-    @Inject
-    JsonSchemaDBRepository repository;
+    @Inject JsonSchemaDBRepository repository;
 
-    public Uni<JsonNode> getCurrentJsonSchema(){
+    public Uni<JsonNode> getCurrentJsonSchema() {
         return repository.getCurrentJsonSchema();
     }
 
@@ -19,9 +18,7 @@ public class JsonSchemaService {
         return repository.addSchema(node);
     }
 
-    public Uni<Void> removeLastSchema(){
+    public Uni<Void> removeLastSchema() {
         return repository.removeLastSchema();
     }
-
-
 }

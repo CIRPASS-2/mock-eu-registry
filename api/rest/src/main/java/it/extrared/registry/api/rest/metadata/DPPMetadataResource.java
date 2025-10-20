@@ -2,17 +2,15 @@ package it.extrared.registry.api.rest.metadata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
-import it.extrared.registry.metadata.DPPMetadata;
+import it.extrared.registry.metadata.DPPMetadataEntry;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.jboss.resteasy.reactive.RestQuery;
 import org.jboss.resteasy.reactive.RestResponse;
-
-import java.util.List;
-
 
 @Path("/registry")
 public interface DPPMetadataResource {
@@ -20,14 +18,16 @@ public interface DPPMetadataResource {
     @POST
     @Operation(
             summary = "Add DPP metadata",
-            description = """
+            description =
+                    """
                     Add or updates a DPP metadata entry to the registry.
                     The payload is validated against the configured json schema before being persisted it.
                     The response always includes the added/updated metadata plus the registry id associated to the them.
                     """)
     @Parameter(
             name = "autocompleteBy",
-            description = """
+            description =
+                    """
                     A list of metadata fields to be used to search in previously added metadata. Such retrieved metadata are
                     then used to autofill fields that are null or absent from the incoming payload as configured by
                     the configuration property registry.autocompletion-enabled-for. This is useful for EO that already provided
@@ -38,5 +38,6 @@ public interface DPPMetadataResource {
                     equal to the corresponding ones in the first found metadata with same reoId.
                     """,
             in = ParameterIn.PATH)
-    Uni<RestResponse<DPPMetadata>> addDPPMetadata(@RestQuery List<String> autocompleteBy, JsonNode jsonNode);
+    Uni<RestResponse<DPPMetadataEntry>> addDPPMetadata(
+            @RestQuery List<String> autocompleteBy, JsonNode jsonNode);
 }

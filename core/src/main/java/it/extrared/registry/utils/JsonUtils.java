@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import jakarta.enterprise.inject.spi.CDI;
 import java.util.Map;
 
+/** Some useful method to handle JSON data. */
 public class JsonUtils {
 
     public static Map<String, Object> toMap(JsonNode node) {

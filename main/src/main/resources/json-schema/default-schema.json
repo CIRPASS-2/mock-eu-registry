@@ -78,6 +78,9 @@
       "description": "Types of data carriers associated with the product",
       "uniqueItems": true,
       "minItems": 1,
+      "examples": [
+        ["QR_CODE","RFID"]
+      ],
       "items": {
         "type": "string",
         "enum": [
@@ -92,10 +95,7 @@
           "PDF417"
         ]
       }
-    },
-    "examples": [
-      ["QR_CODE","RFID"]
-    ]
+    }
   },
   "granularityLevel": {
     "type": "string",

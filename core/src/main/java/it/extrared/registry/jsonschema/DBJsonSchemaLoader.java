@@ -6,7 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
- * Implementation of a {@link JsonSchemaLoader} loading the schema from a database using a {@link JsonSchemaDBRepository}.
+ * Implementation of a {@link JsonSchemaLoader} loading the schema from a database using a {@link
+ * JsonSchemaDBRepository}.
  */
 @ApplicationScoped
 public class DBJsonSchemaLoader extends AbstractJsonSchemaLoader {

@@ -5,9 +5,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * A cache for the schema currently in use.
- */
+/** A cache for the schema currently in use. */
 @ApplicationScoped
 public class SchemaCache {
 
@@ -16,8 +14,8 @@ public class SchemaCache {
     @Inject JsonSchemaLoaderChain loader;
 
     /**
-     *
-     * @return the currently cache schema. If cache is empty the schema is first loaded and then cached.
+     * @return the currently cache schema. If cache is empty the schema is first loaded and then
+     *     cached.
      */
     public Uni<Schema> get() {
         Uni<Schema> schema = cached.get();
@@ -28,9 +26,7 @@ public class SchemaCache {
         return schema;
     }
 
-    /**
-     * Invalidates the cache.
-     */
+    /** Invalidates the cache. */
     public void invalidate() {
         cached.set(null);
     }

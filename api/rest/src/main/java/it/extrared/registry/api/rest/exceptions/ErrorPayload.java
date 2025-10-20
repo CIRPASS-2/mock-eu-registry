@@ -4,8 +4,7 @@ public class ErrorPayload {
 
     private String message;
 
-    public ErrorPayload() {
-    }
+    public ErrorPayload() {}
 
     public ErrorPayload(String message) {
         this.message = message;

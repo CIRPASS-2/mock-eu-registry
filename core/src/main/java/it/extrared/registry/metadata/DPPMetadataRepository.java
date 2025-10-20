@@ -14,18 +14,18 @@ import java.util.function.Function;
 
 public interface DPPMetadataRepository {
 
-    Uni<DPPMetadata> findByUpi(SqlConnection conn, String upi);
+    Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi);
 
-    Uni<DPPMetadata> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters);
+    Uni<DPPMetadataEntry> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters);
 
-    Uni<DPPMetadata> save(SqlConnection conn, DPPMetadata metadata);
+    Uni<DPPMetadataEntry> save(SqlConnection conn, DPPMetadataEntry metadata);
 
-    Uni<DPPMetadata> update(SqlConnection con, DPPMetadata metadata);
+    Uni<DPPMetadataEntry> update(SqlConnection con, DPPMetadataEntry metadata);
 
-    Function<Row, DPPMetadata> ROW_MAPPER =
+    Function<Row, DPPMetadataEntry> ROW_MAPPER =
             r -> {
                 ObjectMapper om = CDI.current().select(ObjectMapper.class).get();
-                DPPMetadata metadata = new DPPMetadata();
+                DPPMetadataEntry metadata = new DPPMetadataEntry();
                 metadata.setRegistryId(r.getString("registry_id"));
                 metadata.setMetadata(
                         om.convertValue(

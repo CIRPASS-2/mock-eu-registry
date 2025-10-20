@@ -10,14 +10,14 @@ import org.jboss.resteasy.reactive.RestResponse;
 
 @ApplicationScoped
 public class SchemaResourceImpl implements SchemaResource {
-    @Inject
-    JsonSchemaService service;
-    @Inject
-    SchemaCache schemaCache;
+    @Inject JsonSchemaService service;
+    @Inject SchemaCache schemaCache;
 
     @Override
     public Uni<RestResponse<Void>> addSchema(JsonNode node) {
-        return service.addSchema(node).invoke(r->schemaCache.invalidate()).map(n->RestResponse.status(201));
+        return service.addSchema(node)
+                .invoke(r -> schemaCache.invalidate())
+                .map(n -> RestResponse.status(201));
     }
 
     @Override
@@ -27,6 +27,8 @@ public class SchemaResourceImpl implements SchemaResource {
 
     @Override
     public Uni<RestResponse<Void>> removeCurrent() {
-        return service.removeLastSchema().map(RestResponse::accepted).invoke(r->schemaCache.invalidate());
+        return service.removeLastSchema()
+                .map(RestResponse::accepted)
+                .invoke(r -> schemaCache.invalidate());
     }
 }

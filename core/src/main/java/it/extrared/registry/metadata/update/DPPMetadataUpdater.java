@@ -2,7 +2,7 @@ package it.extrared.registry.metadata.update;
 
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.SqlConnection;
-import it.extrared.registry.metadata.DPPMetadata;
+import it.extrared.registry.metadata.DPPMetadataEntry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -36,13 +36,14 @@ public class DPPMetadataUpdater {
 
     /**
      * Apply the update over a metadata entry.
+     *
      * @param updateType the {@link UpdateType} to be used.
      * @param conn a {@link SqlConnection}
      * @param metadata the metadata to payload with the updated data.
      * @return the entry with the data updated.
      */
-    public Uni<DPPMetadata> applyUpdate(
-            UpdateType updateType, SqlConnection conn, DPPMetadata metadata) {
+    public Uni<DPPMetadataEntry> applyUpdate(
+            UpdateType updateType, SqlConnection conn, DPPMetadataEntry metadata) {
         UpdateStrategy strategy = strategies.get(updateType);
         if (strategy == null)
             throw new UnsupportedOperationException(
