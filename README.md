@@ -451,6 +451,9 @@ The application exposes two main API groups:
 1. **Metadata API**: For creating and managing product metadata entries
 2. **Schema API**: For runtime schema configuration and retrieval
 
+To obtain the OpenAPI document start the application and issue a `GET` request targeting the path `/q/openapi`. Use the `Accept`
+header to negotiate the media type (either `JSON` or `YAML`). The endpoint will always return an OpenAPI document aligned with
+the current JSON schema in use by the application.
 ### Metadata Endpoints
 
 #### POST /metadata/v1
