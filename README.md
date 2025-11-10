@@ -1,6 +1,6 @@
 # DPP Metadata Registry
 
-An example implementation of a Digital Product Passport (DPP) Metadata Registry compliant with EU regulations.
+An example implementation of a Digital Product Passport (DPP) Metadata Registry.
 
 ## Overview
 
