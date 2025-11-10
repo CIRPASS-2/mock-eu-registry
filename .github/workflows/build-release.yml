@@ -15,7 +15,7 @@ jobs:
       image_tag: '${{ github.ref_name }}'
       image_registry: 'ghcr.io'
       dockerfile_path: './src/main/docker/Dockerfile.jvm'
-      profile_maven: 'native'
+      profile_maven: 'pgsql-oidc'
       target_maven_path: './main/target/'
   mariadb-oidc:
     uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-build-release.yml@develop
@@ -27,6 +27,6 @@ jobs:
       image_tag: '${{ github.ref_name }}'
       image_registry: 'ghcr.io'
       dockerfile_path: './src/main/docker/Dockerfile.jvm'
-      profile_maven: 'native-copy'
+      profile_maven: 'mariadb-oidc'
       target_maven_path: './main/target/'
       docker_build_arguments: 'QUARKUS_PROFILE=mariadb,oidc'
