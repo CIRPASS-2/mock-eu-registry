@@ -1,0 +1,32 @@
+name: 'DPP Metadata Registry Build Release'
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  pgsql-oidc:
+    uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-build-release.yml@develop
+    with:
+      java_version: '21'
+      java_distribution: 'temurin'
+      maven_version: '3.9.6'
+      image_name: '${{ github.repository }}'
+      image_tag: '${{ github.ref_name }}'
+      image_registry: 'ghcr.io'
+      dockerfile_path: './src/main/docker/Dockerfile.jvm'
+      profile_maven: 'native'
+      target_maven_path: './main/target/'
+  mariadb-oidc:
+    uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-build-release.yml@develop
+    with:
+      java_version: '21'
+      java_distribution: 'temurin'
+      maven_version: '3.9.6'
+      image_name: '${{ github.repository }}'
+      image_tag: '${{ github.ref_name }}'
+      image_registry: 'ghcr.io'
+      dockerfile_path: './src/main/docker/Dockerfile.jvm'
+      profile_maven: 'native-copy'
+      target_maven_path: './main/target/'
