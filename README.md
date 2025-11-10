@@ -34,29 +34,38 @@ This application provides an HTTP-based registry service for persisting and mana
 
 ## Quick Start
 
+The application provides two maven profiles:
+- `pgsql-oidc` profile builds an application using postgresql as a database and oidc as the authentication method.
+- `mariadb-oidc` profile builds an application using mariadb as a database and oidc as the authentication method.
+
 ### Build the Application
 
 ```bash
-mvn clean install
+mvn clean install -P pgsql-oidc
+```
+or
+
+```bash
+mvn clean install -P mariadb-oidc
 ```
 
 ### Run the Application
 
-After building, you can run the application using the Quarkus runner:
+After building, you can run the application using the Quarkus runner.
+
+Configuration can be passed as a custom `application.properties` file at startup with
 
 ```bash
-java -jar target/quarkus-app/quarkus-run.jar
+java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.config.locations=/path/to/application.properties  -D quarkus.profile=pgsql,oidc
 ```
 
-### Run with Custom Configuration
-
-You can provide a custom `application.properties` file at startup:
+or
 
 ```bash
-java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.config.locations=/path/to/application.properties
+java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.config.locations=/path/to/application.properties  -D quarkus.profile=mariadb,oidc
 ```
 
-Or use environment variables:
+Instead of an `application.properties`, environment variables can be used:
 
 ```bash
 REGISTRY_DB_HOST=localhost \
@@ -67,7 +76,21 @@ REGISTRY_DB_PASSWORD=db_password \
 REGISTRY_OIDC_BASE_URL=https://your-idp.com/realms/your-realm \
 REGISTRY_OIDC_CLIENT_ID=your-client-id \
 REGISTRY_OIDC_SECRET=your-secret \
-java -jar target/quarkus-app/quarkus-run.jar
+java -jar target/quarkus-app/quarkus-run.jar -D quarkus.profile=pgsql,oidc
+```
+
+or
+
+```bash
+REGISTRY_DB_HOST=localhost \
+REGISTRY_DB_PORT=5432 \
+REGISTRY_DB_NAME=registry_db \
+REGISTRY_DB_USERNAME=db_user \
+REGISTRY_DB_PASSWORD=db_password \
+REGISTRY_OIDC_BASE_URL=https://your-idp.com/realms/your-realm \
+REGISTRY_OIDC_CLIENT_ID=your-client-id \
+REGISTRY_OIDC_SECRET=your-secret \
+java -jar target/quarkus-app/quarkus-run.jar -D quarkus.profile=mariadb,oidc
 ```
 
 ### Using Docker
