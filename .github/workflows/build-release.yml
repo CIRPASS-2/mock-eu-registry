@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - '*'
-
 jobs:
   pgsql-oidc:
     uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-build-release.yml@develop
@@ -30,3 +29,4 @@ jobs:
       dockerfile_path: './src/main/docker/Dockerfile.jvm'
       profile_maven: 'native-copy'
       target_maven_path: './main/target/'
+      docker_build_arguments: 'QUARKUS_PROFILE=mariadb,oidc'
