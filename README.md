@@ -39,12 +39,10 @@ The application provides two maven profiles:
 - `mariadb-oidc` profile builds an application using mariadb as a database and oidc as the authentication method.
 
 ### Build the Application
-
 ```bash
 mvn clean install -P pgsql-oidc
 ```
 or
-
 ```bash
 mvn clean install -P mariadb-oidc
 ```
@@ -54,48 +52,29 @@ mvn clean install -P mariadb-oidc
 After building, you can run the application using the Quarkus runner.
 
 Configuration can be passed as a custom `application.properties` file at startup with
-
 ```bash
-java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.config.locations=/path/to/application.properties  -D quarkus.profile=pgsql,oidc
+java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-or
-
+Place the `application.properties` file in the same directory as the JAR, or specify its location:
 ```bash
-java -jar target/quarkus-app/quarkus-run.jar -Dquarkus.config.locations=/path/to/application.properties  -D quarkus.profile=mariadb,oidc
+java -Dquarkus.config.locations=/path/to/application.properties -jar target/quarkus-app/quarkus-run.jar
 ```
 
 Instead of an `application.properties`, environment variables can be used:
-
 ```bash
-REGISTRY_DB_HOST=localhost \
-REGISTRY_DB_PORT=5432 \
-REGISTRY_DB_NAME=registry_db \
-REGISTRY_DB_USERNAME=db_user \
-REGISTRY_DB_PASSWORD=db_password \
-REGISTRY_OIDC_BASE_URL=https://your-idp.com/realms/your-realm \
-REGISTRY_OIDC_CLIENT_ID=your-client-id \
-REGISTRY_OIDC_SECRET=your-secret \
-java -jar target/quarkus-app/quarkus-run.jar -D quarkus.profile=pgsql,oidc
-```
-
-or
-
-```bash
-REGISTRY_DB_HOST=localhost \
-REGISTRY_DB_PORT=5432 \
-REGISTRY_DB_NAME=registry_db \
-REGISTRY_DB_USERNAME=db_user \
-REGISTRY_DB_PASSWORD=db_password \
-REGISTRY_OIDC_BASE_URL=https://your-idp.com/realms/your-realm \
-REGISTRY_OIDC_CLIENT_ID=your-client-id \
-REGISTRY_OIDC_SECRET=your-secret \
-java -jar target/quarkus-app/quarkus-run.jar -D quarkus.profile=mariadb,oidc
+QUARKUS_DATASOURCE_REACTIVE_URL=vertx-reactive:postgresql://localhost:5432/registry_db \
+QUARKUS_DATASOURCE_USERNAME=db_user \
+QUARKUS_DATASOURCE_PASSWORD=db_password \
+QUARKUS_OIDC_AUTH_SERVER_URL=https://your-idp.com/realms/your-realm \
+QUARKUS_OIDC_CLIENT_ID=your-client-id \
+QUARKUS_OIDC_CREDENTIALS_SECRET=your-secret \
+java -jar target/quarkus-app/quarkus-run.jar
 ```
 
 ### Using Docker
 
-See the [Docker](#docker-compose) and [Docker Compose](#docker-compose) examples in the configuration section.
+See the [Docker Compose](#docker-compose) examples in the configuration section.
 
 ## Configuration
 
@@ -103,22 +82,34 @@ See the [Docker](#docker-compose) and [Docker Compose](#docker-compose) examples
 
 #### Database Configuration
 
-| Variable                        | Environment Variable            | Description          | Default |
-|---------------------------------|---------------------------------|----------------------|---------|
-| `registry-storage.db-host`      | `REGISTRY_STORAGE_DB_HOST`      | Database hostname    | -       |
-| `registry-storage.db-port`      | `REGISTRY_STORAGE_DB_PORT`      | Database port        | -       |
-| `registry-storage.db-name`      | `REGISTRY_STORAGE_DB_NAME`      | Database name        | -       |
-| `registry-storage.db-username`  | `REGISTRY_STORAGE_DB_USERNAME`  | Database username    | -       |
-| `registry-storage.db-password`  | `REGISTRY_STORAGE_DB_PASSWORD`  | Database password    | -       |
-| `registry-storage.db.pool-size` | `REGISTRY_STORAGE_DB_POOL_SIZE` | Connection pool size | `16`    |
+| Variable                                   | Environment Variable                          | Description                    | Default |
+|--------------------------------------------|-----------------------------------------------|--------------------------------|---------|
+| `quarkus.datasource.reactive.url`          | `QUARKUS_DATASOURCE_REACTIVE_URL`             | Reactive datasource URL        | -       |
+| `quarkus.datasource.username`              | `QUARKUS_DATASOURCE_USERNAME`                 | Database username              | -       |
+| `quarkus.datasource.password`              | `QUARKUS_DATASOURCE_PASSWORD`                 | Database password              | -       |
+| `quarkus.datasource.reactive.max-size`     | `QUARKUS_DATASOURCE_REACTIVE_MAX_SIZE`        | Maximum connection pool size   | `16`    |
+
+**PostgreSQL Reactive URL format:**
+```
+vertx-reactive:postgresql://hostname:port/database_name
+```
+Example: `vertx-reactive:postgresql://localhost:5432/registry_db`
+
+**MariaDB Reactive URL format:**
+```
+vertx-reactive:mysql://hostname:port/database_name
+```
+Example: `vertx-reactive:mysql://localhost:3306/registry_db`
+
+> **Note**: For MariaDB, the reactive driver uses the `mysql` protocol identifier.
 
 #### OpenID Connect Configuration
 
 | Variable                             | Environment Variable                 | Description                                         | Default |
 |--------------------------------------|--------------------------------------|-----------------------------------------------------|---------|
-| `registry-auth.oidc.base-url`        | `REGISTRY_AUTH_OIDC_BASE_URL`        | OIDC server base URL                                | -       |
-| `registry-auth.oidc.client-id`       | `REGISTRY_AUTH_OIDC_CLIENT_ID`       | OIDC client ID                                      | -       |
-| `registry-auth.oidc.secret`          | `REGISTRY_AUTH_OIDC_SECRET`          | OIDC client secret                                  | -       |
+| `quarkus.oidc.auth-server-url`       | `QUARKUS_OIDC_AUTH_SERVER_URL`       | OIDC server URL (realm URL for Keycloak)            | -       |
+| `quarkus.oidc.client-id`             | `QUARKUS_OIDC_CLIENT_ID`             | OIDC client ID                                      | -       |
+| `quarkus.oidc.credentials.secret`    | `QUARKUS_OIDC_CREDENTIALS_SECRET`    | OIDC client secret                                  | -       |
 | `registry-auth.oidc.role-claim-path` | `REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH` | Comma-separated JWT claim paths for role extraction | `group` |
 
 #### Application Configuration
@@ -151,28 +142,25 @@ See the [Docker](#docker-compose) and [Docker Compose](#docker-compose) examples
 
 **JSON Schema Location**
 - Supports multiple formats:
-  - HTTP URL: `https://example.com/schema.json`
-  - File URI: `file:///path/to/schema.json`
-  - Absolute path: `/etc/registry/schema.json`
+    - HTTP URL: `https://example.com/schema.json`
+    - File URI: `file:///path/to/schema.json`
+    - Absolute path: `/etc/registry/schema.json`
 
 ### Configuration Examples
 
-#### Application Properties
-
+#### Application Properties (PostgreSQL)
 ```properties
 # Database Configuration
-registry.db-host=localhost
-registry.db-port=5432
-registry.db-name=mydb
-registry.db-username=dbuser
-registry.db-password=dbpass
-registry.db.pool-size=20
+quarkus.datasource.reactive.url=vertx-reactive:postgresql://localhost:5432/registry_db
+quarkus.datasource.username=dbuser
+quarkus.datasource.password=dbpass
+quarkus.datasource.reactive.max-size=20
 
 # OIDC Configuration
-registry.oidc.base-url=https://keycloak.example.com/realms/myrealm
-registry.oidc.client-id=my-client
-registry.oidc.secret=my-secret
-registry.oidc.role-claim-path=group,realm_access.roles
+quarkus.oidc.auth-server-url=https://keycloak.example.com/realms/myrealm
+quarkus.oidc.client-id=my-client
+quarkus.oidc.credentials.secret=my-secret
+registry-auth.oidc.role-claim-path=group,realm_access.roles
 
 # Application Configuration
 registry.autocompletion-enabled-for=commodityCode,facilitiesId,dataCarrierTypes
@@ -182,30 +170,49 @@ registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
 registry.json-schema-location=/etc/registry/custom-schema.json
 ```
 
-#### Docker Compose
+#### Application Properties (MariaDB)
+```properties
+# Database Configuration
+quarkus.datasource.reactive.url=vertx-reactive:mysql://localhost:3306/registry_db
+quarkus.datasource.username=dbuser
+quarkus.datasource.password=dbpass
+quarkus.datasource.reactive.max-size=20
 
+# OIDC Configuration
+quarkus.oidc.auth-server-url=https://keycloak.example.com/realms/myrealm
+quarkus.oidc.client-id=my-client
+quarkus.oidc.credentials.secret=my-secret
+registry-auth.oidc.role-claim-path=group,realm_access.roles
+
+# Application Configuration
+registry.autocompletion-enabled-for=commodityCode,facilitiesId,dataCarrierTypes
+registry.update-strategy=UPDATE
+registry.upi-field-name=upi
+registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
+registry.json-schema-location=/etc/registry/custom-schema.json
+```
+
+#### Docker Compose (PostgreSQL)
 ```yaml
 version: '3.8'
 
 services:
   registry:
-    image: dpp-metadata-registry:latest
+    image: ghcr.io/extra-red-srl/dpp-metadata-registry-pgsql-oidc:latest
     ports:
       - "8080:8080"
     environment:
       # Database Configuration
-      REGISTRY_DB_HOST: postgres
-      REGISTRY_DB_PORT: 5432
-      REGISTRY_DB_NAME: mydb
-      REGISTRY_DB_USERNAME: dbuser
-      REGISTRY_DB_PASSWORD: ${DB_PASSWORD}
-      REGISTRY_DB_POOL_SIZE: 20
+      QUARKUS_DATASOURCE_REACTIVE_URL: vertx-reactive:postgresql://postgres:5432/registry_db
+      QUARKUS_DATASOURCE_USERNAME: dbuser
+      QUARKUS_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      QUARKUS_DATASOURCE_REACTIVE_MAX_SIZE: 20
       
       # OIDC Configuration
-      REGISTRY_OIDC_BASE_URL: https://keycloak:8443/realms/myrealm
-      REGISTRY_OIDC_CLIENT_ID: my-client
-      REGISTRY_OIDC_SECRET: ${OIDC_SECRET}
-      REGISTRY_OIDC_ROLE_CLAIM_PATH: group,realm_access.roles
+      QUARKUS_OIDC_AUTH_SERVER_URL: https://keycloak:8443/realms/myrealm
+      QUARKUS_OIDC_CLIENT_ID: my-client
+      QUARKUS_OIDC_CREDENTIALS_SECRET: ${OIDC_SECRET}
+      REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH: group,realm_access.roles
       
       # Application Configuration
       AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId,dataCarrierTypes
@@ -221,7 +228,7 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: mydb
+      POSTGRES_DB: registry_db
       POSTGRES_USER: dbuser
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -233,22 +240,68 @@ volumes:
   postgres-data:
 ```
 
-#### Kubernetes Deployment
+#### Docker Compose (MariaDB)
+```yaml
+version: '3.8'
 
+services:
+  registry:
+    image: ghcr.io/extra-red-srl/dpp-metadata-registry-mariadb-oidc:latest
+    ports:
+      - "8080:8080"
+    environment:
+      # Database Configuration
+      QUARKUS_DATASOURCE_REACTIVE_URL: vertx-reactive:mysql://mariadb:3306/registry_db
+      QUARKUS_DATASOURCE_USERNAME: dbuser
+      QUARKUS_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      QUARKUS_DATASOURCE_REACTIVE_MAX_SIZE: 20
+      
+      # OIDC Configuration
+      QUARKUS_OIDC_AUTH_SERVER_URL: https://keycloak:8443/realms/myrealm
+      QUARKUS_OIDC_CLIENT_ID: my-client
+      QUARKUS_OIDC_CREDENTIALS_SECRET: ${OIDC_SECRET}
+      REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH: group,realm_access.roles
+      
+      # Application Configuration
+      AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId,dataCarrierTypes
+      REGISTRY_UPDATE_STRATEGY: UPDATE
+      REGISTRY_UPI_FIELD_NAME: upi
+      REGISTRY_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
+      REGISTRY_JSON_SCHEMA_LOCATION: /etc/registry/custom-schema.json
+    depends_on:
+      - mariadb
+    volumes:
+      - ./custom-schema.json:/etc/registry/custom-schema.json:ro
+
+  mariadb:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: registry_db
+      MARIADB_USER: dbuser
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  mariadb-data:
+```
+
+#### Kubernetes Deployment
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: registry-config
 data:
-  REGISTRY_DB_HOST: "postgres-service"
-  REGISTRY_DB_PORT: "5432"
-  REGISTRY_DB_NAME: "mydb"
-  REGISTRY_DB_USERNAME: "dbuser"
-  REGISTRY_DB_POOL_SIZE: "20"
-  REGISTRY_OIDC_BASE_URL: "https://keycloak.example.com/realms/myrealm"
-  REGISTRY_OIDC_CLIENT_ID: "my-client"
-  REGISTRY_OIDC_ROLE_CLAIM_PATH: "group,realm_access.roles"
+  QUARKUS_DATASOURCE_REACTIVE_URL: "vertx-reactive:postgresql://postgres-service:5432/registry_db"
+  QUARKUS_DATASOURCE_USERNAME: "dbuser"
+  QUARKUS_DATASOURCE_REACTIVE_MAX_SIZE: "20"
+  QUARKUS_OIDC_AUTH_SERVER_URL: "https://keycloak.example.com/realms/myrealm"
+  QUARKUS_OIDC_CLIENT_ID: "my-client"
+  REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH: "group,realm_access.roles"
   AUTOCOMPLETION_ENABLED_FOR: "commodityCode,facilitiesId,dataCarrierTypes"
   REGISTRY_UPDATE_STRATEGY: "UPDATE"
   REGISTRY_UPI_FIELD_NAME: "upi"
@@ -262,8 +315,8 @@ metadata:
   name: registry-secrets
 type: Opaque
 stringData:
-  REGISTRY_DB_PASSWORD: "dbpass"
-  REGISTRY_OIDC_SECRET: "my-secret"
+  QUARKUS_DATASOURCE_PASSWORD: "dbpass"
+  QUARKUS_OIDC_CREDENTIALS_SECRET: "my-secret"
 
 ---
 apiVersion: apps/v1
@@ -282,7 +335,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: dpp-metadata-registry:latest
+        image: ghcr.io/extra-red-srl/dpp-metadata-registry-pgsql-oidc:latest
         ports:
         - containerPort: 8080
         envFrom:
