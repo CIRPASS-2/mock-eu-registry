@@ -38,6 +38,7 @@ The application provides two maven profiles:
 - `pgsql-oidc` profile builds an application using postgresql as a database and oidc as the authentication method.
 - `mariadb-oidc` profile builds an application using mariadb as a database and oidc as the authentication method.
 
+Artifacts and docker images are available [here](https://github.com/extra-red-srl/dpp-metadata-registry/releases)
 ### Build the Application
 ```bash
 mvn clean install -P pgsql-oidc
