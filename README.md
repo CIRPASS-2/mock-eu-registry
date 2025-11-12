@@ -52,9 +52,16 @@ mvn clean install -P mariadb-oidc
 
 After building, you can run the application using the Quarkus runner.
 
-Place the `application.properties` file in the same directory as the JAR, or specify its location:
+Create an `application.properties` with your configuration parameters and specify its location.
+
+***Run with PGSQL***
 ```bash
-java -Dquarkus.config.locations=file://path/to/application.properties -jar target/quarkus-app/quarkus-run.jar
+java -Dquarkus.config.locations=file://path/to/application.properties -Dquarkus.profile=pgql,oidc -jar target/quarkus-app/quarkus-run.jar
+```
+
+***Run with MARIADB***
+```bash
+java -Dquarkus.config.locations=file://path/to/application.properties -Dquarkus.profile=mariadb,oidc -jar target/quarkus-app/quarkus-run.jar
 ```
 
 Instead of an `application.properties`, environment variables can be used:
