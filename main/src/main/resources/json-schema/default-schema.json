@@ -9,6 +9,7 @@
     "liveURL",
     "backupURL",
     "commodityCode",
+    "facilitiesId",
     "dataCarrierTypes",
     "granularityLevel"
   ],
