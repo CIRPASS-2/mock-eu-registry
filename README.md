@@ -99,6 +99,44 @@ Example: `vertx-reactive:mysql://localhost:3306/registry_db`
 
 > **Note**: For MariaDB, the reactive driver uses the `mysql` protocol identifier.
 
+**PostgreSQL Schema Script:**
+```sql
+CREATE SEQUENCE IF NOT EXISTS dpp_metadata_seq;
+
+CREATE TABLE IF NOT EXISTS dpp_metadata (
+id BIGINT PRIMARY KEY DEFAULT nextval('dpp_metadata_seq'),
+registry_id VARCHAR(36) NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+metadata JSONB NOT NULL
+);
+
+CREATE SEQUENCE IF NOT EXISTS json_schema_seq;
+
+CREATE TABLE IF NOT EXISTS json_schemas (
+id BIGINT PRIMARY KEY DEFAULT nextval('json_schema_seq'),
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+data_schema JSONB NOT NULL
+);
+```
+
+**MariaDB Schema Script:**
+```sql
+CREATE TABLE IF NOT EXISTS dpp_metadata (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    registry_id VARCHAR(36) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    metadata JSON NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS json_schemas (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_schema JSON NOT NULL
+);
+```
+
 #### OpenID Connect Configuration
 
 | Variable                             | Environment Variable                 | Description                                         | Default |
@@ -113,7 +151,7 @@ Example: `vertx-reactive:mysql://localhost:3306/registry_db`
 | Variable                              | Environment Variable            | Description                                                           | Default |
 |---------------------------------------|---------------------------------|-----------------------------------------------------------------------|---------|
 | `registry.autocompletion-enabled-for` | `AUTOCOMPLETION_ENABLED_FOR`    | Comma-separated list of fields eligible for autocompletion            | -       |
-| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`      | Strategy for handling duplicate UPI: `UPDATE` or `APPEND_WITH_NEW_ID` | -       |
+| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`      | Strategy for handling duplicate UPI: `MODIFY` or `APPEND_WITH_NEW_ID` | -       |
 | `registry.upi-field-name`             | `REGISTRY_UPI_FIELD_NAME`       | Custom name for the unique product identifier field in the schema     | `upi`   |
 | `registry.reoid-field-name`           | `REGISTRY_REOID_FIELD_NAME`     | Custom name for the responsible economic operator field in the schema | `reoId` |
 | `registry.role-mappings`              | `REGISTRY_ROLE_MAPPINGS`        | Comma-separated mappings between external and internal roles          | -       |
@@ -130,7 +168,7 @@ Example: `vertx-reactive:mysql://localhost:3306/registry_db`
 #### Configuration Notes
 
 **Update Strategy**
-- `UPDATE`: Overwrites existing metadata when the same UPI is submitted
+- `MODIFY`: Overwrites existing metadata when the same UPI is submitted
 - `APPEND_WITH_NEW_ID`: Creates a new entry even if the UPI already exists
 
 **Role Mappings**
@@ -168,7 +206,7 @@ registry-auth.oidc.role-claim-path=group,realm_access.roles
 
 # Application Configuration
 registry.autocompletion-enabled-for=commodityCode,facilitiesId,dataCarrierTypes
-registry.update-strategy=UPDATE
+registry.update-strategy=MODIFY
 registry.upi-field-name=upi
 registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
 registry.json-schema-location=/etc/registry/custom-schema.json
@@ -190,7 +228,7 @@ registry-auth.oidc.role-claim-path=group,realm_access.roles
 
 # Application Configuration
 registry.autocompletion-enabled-for=commodityCode,facilitiesId,dataCarrierTypes
-registry.update-strategy=UPDATE
+registry.update-strategy=MODIFY
 registry.upi-field-name=upi
 registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
 registry.json-schema-location=/etc/registry/custom-schema.json
@@ -220,7 +258,7 @@ services:
       
       # Application Configuration
       AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId,dataCarrierTypes
-      REGISTRY_UPDATE_STRATEGY: UPDATE
+      REGISTRY_UPDATE_STRATEGY: MODIFY
       REGISTRY_UPI_FIELD_NAME: upi
       REGISTRY_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
       REGISTRY_JSON_SCHEMA_LOCATION: /etc/registry/custom-schema.json
@@ -268,7 +306,7 @@ services:
       
       # Application Configuration
       AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId,dataCarrierTypes
-      REGISTRY_UPDATE_STRATEGY: UPDATE
+      REGISTRY_UPDATE_STRATEGY: MODIFY
       REGISTRY_UPI_FIELD_NAME: upi
       REGISTRY_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
       REGISTRY_JSON_SCHEMA_LOCATION: /etc/registry/custom-schema.json
@@ -307,7 +345,7 @@ data:
   QUARKUS_OIDC_CLIENT_ID: "my-client"
   REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH: "group,realm_access.roles"
   AUTOCOMPLETION_ENABLED_FOR: "commodityCode,facilitiesId,dataCarrierTypes"
-  REGISTRY_UPDATE_STRATEGY: "UPDATE"
+  REGISTRY_UPDATE_STRATEGY: "MODIFY"
   REGISTRY_UPI_FIELD_NAME: "upi"
   REGISTRY_ROLE_MAPPINGS: "keycloak_admin:admin,keycloak_user:eu,keycloak_operator:eo"
   REGISTRY_JSON_SCHEMA_LOCATION: "/etc/registry/custom-schema.json"
@@ -562,7 +600,7 @@ Creates or updates a metadata entry in the registry.
 **Behavior:**
 - If the UPI does not exist: creates a new entry
 - If the UPI already exists: behavior depends on the configured [update strategy](#configuration-notes)
-  - `UPDATE`: overwrites the existing entry
+  - `MODIFY`: overwrites the existing entry
   - `APPEND_WITH_NEW_ID`: creates a new entry with a different registry ID
 
 **Query Parameters:**
