@@ -20,6 +20,7 @@ import static it.extrared.registry.utils.CommonUtils.DATE_TIME_FORMAT;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /** Data class representing a DPPMetadata entry. */
 public class DPPMetadataEntry {
@@ -70,5 +71,35 @@ public class DPPMetadataEntry {
 
     public void setMetadata(JsonNode metadata) {
         this.metadata = metadata;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        DPPMetadataEntry that = (DPPMetadataEntry) object;
+        return Objects.equals(registryId, that.registryId)
+                && Objects.equals(createdAt, that.createdAt)
+                && Objects.equals(modifiedAt, that.modifiedAt)
+                && Objects.equals(metadata, that.metadata);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(registryId, createdAt, modifiedAt, metadata);
+    }
+
+    @Override
+    public String toString() {
+        return "DPPMetadataEntry{"
+                + "registryId='"
+                + registryId
+                + '\''
+                + ", createdAt="
+                + createdAt
+                + ", modifiedAt="
+                + modifiedAt
+                + ", metadata="
+                + metadata
+                + '}';
     }
 }

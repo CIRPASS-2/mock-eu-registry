@@ -17,6 +17,8 @@ package it.extrared.registry.utils;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.TimeBasedGenerator;
+import java.util.function.Supplier;
+import org.jboss.logging.Logger;
 
 /** UUID related utils methods. */
 public class CommonUtils {
@@ -32,5 +34,13 @@ public class CommonUtils {
      */
     public static String generateTimeBasedUUID() {
         return TIME_GENERATOR.generate().toString();
+    }
+
+    public static void debug(Logger logger, Supplier<String> message) {
+        if (logger.isDebugEnabled()) logger.debug(message.get());
+    }
+
+    public static void debug(Logger logger, Supplier<String> message, Throwable t) {
+        if (logger.isDebugEnabled()) logger.debug(message.get(), t);
     }
 }

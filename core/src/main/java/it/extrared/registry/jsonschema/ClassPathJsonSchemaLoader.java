@@ -15,6 +15,8 @@
  */
 package it.extrared.registry.jsonschema;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Uni;
@@ -26,6 +28,7 @@ import jakarta.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Supplier;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of a {@link JsonSchemaLoader} loading the schema from the classpath (resources
@@ -37,6 +40,8 @@ public class ClassPathJsonSchemaLoader extends AbstractJsonSchemaLoader {
     @Inject MetadataRegistryConfig config;
     @Inject ObjectMapper objectMapper;
 
+    private static final Logger LOG = Logger.getLogger(ClassPathJsonSchemaLoader.class);
+
     @Override
     protected Uni<JsonNode> loadSchemaInternal() {
         Supplier<Uni<? extends JsonNode>> supplier =
@@ -46,10 +51,13 @@ public class ClassPathJsonSchemaLoader extends AbstractJsonSchemaLoader {
     }
 
     private JsonNode readFromClassPath() {
-        try (InputStream is =
-                getClass()
-                        .getResourceAsStream(
-                                "/json-schema/%s".formatted(config.defaultTemplateName()))) {
+        String resourcePath = "/json-schema/%s".formatted(config.defaultTemplateName());
+        debug(
+                LOG,
+                () ->
+                        "Trying to load the default JSON schema from class path at %s"
+                                .formatted(resourcePath));
+        try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
             return objectMapper.readTree(is);
         } catch (IOException e) {
             throw new JsonSchemaException(
