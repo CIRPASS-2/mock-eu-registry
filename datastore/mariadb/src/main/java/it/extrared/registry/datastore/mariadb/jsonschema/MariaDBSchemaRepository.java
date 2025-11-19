@@ -15,6 +15,7 @@
  */
 package it.extrared.registry.datastore.mariadb.jsonschema;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
 import static it.extrared.registry.utils.SQLClientUtils.getJsonNode;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,6 +31,7 @@ import it.extrared.registry.jsonschema.JsonSchemaDBRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.LocalDateTime;
+import org.jboss.logging.Logger;
 
 /** MariaDB implementation of the {@link JsonSchemaDBRepository} */
 @ApplicationScoped
@@ -38,6 +40,8 @@ public class MariaDBSchemaRepository implements JsonSchemaDBRepository {
     @Inject Pool pool;
 
     @Inject ObjectMapper objectMapper;
+
+    private static final Logger LOGGER = Logger.getLogger(MariaDBSchemaRepository.class);
 
     private static final String SELECT_MAX = "SELECT MAX(created_at) FROM json_schemas";
 
@@ -65,11 +69,13 @@ public class MariaDBSchemaRepository implements JsonSchemaDBRepository {
 
     @Override
     public Uni<JsonNode> getCurrentJsonSchema() {
+        debug(LOGGER, () -> "Retrieving current json schema");
         Uni<RowSet<byte[]>> result =
                 pool.query(SELECT_CURRENT)
                         .mapping(
                                 r -> {
                                     String json = r.getString(0);
+                                    debug(LOGGER, () -> "Current schema is:\n%s".formatted(json));
                                     if (StringUtils.isNotBlank(json)) return json.getBytes();
                                     return null;
                                 })
@@ -80,11 +86,14 @@ public class MariaDBSchemaRepository implements JsonSchemaDBRepository {
     @Override
     public Uni<Void> addSchema(JsonNode schema) {
         try {
+            debug(LOGGER, () -> "Persisting a new JSON schema..");
             String rawJson = objectMapper.writeValueAsString(schema);
+            debug(LOGGER, () -> "JSON schema is:\n%s".formatted(rawJson));
             return pool.withTransaction(
                             c ->
                                     pool.preparedQuery(INSERT_SCHEMA)
                                             .execute(Tuple.of(rawJson, LocalDateTime.now())))
+                    .invoke(rs -> debug(LOGGER, () -> "Insert statement executed"))
                     .replaceWithVoid();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -93,6 +102,9 @@ public class MariaDBSchemaRepository implements JsonSchemaDBRepository {
 
     @Override
     public Uni<Void> removeLastSchema() {
-        return pool.withTransaction(c -> pool.query(REMOVE_CURRENT).execute()).replaceWithVoid();
+        debug(LOGGER, () -> "Removing the last JSON schema added to the repository...");
+        return pool.withTransaction(c -> pool.query(REMOVE_CURRENT).execute())
+                .invoke(a -> debug(LOGGER, () -> "schema deleted"))
+                .replaceWithVoid();
     }
 }

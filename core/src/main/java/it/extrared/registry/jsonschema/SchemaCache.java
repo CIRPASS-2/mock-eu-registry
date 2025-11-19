@@ -15,10 +15,13 @@
  */
 package it.extrared.registry.jsonschema;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
+
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.concurrent.atomic.AtomicReference;
+import org.jboss.logging.Logger;
 
 /** A cache for the schema currently in use. */
 @ApplicationScoped
@@ -28,6 +31,8 @@ public class SchemaCache {
 
     @Inject JsonSchemaLoaderChain loader;
 
+    private static final Logger LOG = Logger.getLogger(SchemaCache.class);
+
     /**
      * @return the currently cache schema. If cache is empty the schema is first loaded and then
      *     cached.
@@ -35,14 +40,17 @@ public class SchemaCache {
     public Uni<Schema> get() {
         Uni<Schema> schema = cached.get();
         if (schema == null) {
+            debug(LOG, () -> "Caching JSON schema...");
             schema = loader.loadSchema().memoize().indefinitely();
             cached.compareAndSet(null, schema);
+            debug(LOG, () -> "JSON schema cached...");
         }
         return schema;
     }
 
     /** Invalidates the cache. */
     public void invalidate() {
+        debug(LOG, () -> "Invalidating JSON schema cache...");
         cached.set(null);
     }
 }

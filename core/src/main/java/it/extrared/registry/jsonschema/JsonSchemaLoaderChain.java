@@ -22,6 +22,7 @@ import com.networknt.schema.SpecVersion;
 import io.smallrye.mutiny.Uni;
 import it.extrared.registry.MetadataRegistryConfig;
 import it.extrared.registry.exceptions.JsonSchemaException;
+import it.extrared.registry.utils.CommonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -29,6 +30,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import org.jboss.logging.Logger;
 
 /**
  * Chain of schema loader that executes the loaders by priority order untile a DPP metadata JSON
@@ -43,6 +45,8 @@ public class JsonSchemaLoaderChain {
 
     private static final Function<JsonNode, JsonSchema> JN_TO_SCHEMA =
             jn -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012).getSchema(jn);
+
+    private static final Logger LOG = Logger.getLogger(JsonSchemaLoaderChain.class);
 
     @Inject
     public JsonSchemaLoaderChain(
@@ -70,9 +74,11 @@ public class JsonSchemaLoaderChain {
         Uni<JsonSchema> uniSchema = head.loadSchema().map(JN_TO_SCHEMA);
         return uniSchema.map(
                 s -> {
+                    CommonUtils.debug(LOG, () -> "Valdating retrieved schema");
                     Schema schema = new Schema(s, config);
                     List<String> msgs = schema.validateSchemaCompliancy();
                     if (!msgs.isEmpty()) throw new JsonSchemaException(String.join(". ", msgs));
+                    CommonUtils.debug(LOG, () -> "Schema is valid");
                     return schema;
                 });
     }

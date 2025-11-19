@@ -15,6 +15,8 @@
  */
 package it.extrared.registry.security;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
+
 import io.quarkus.security.identity.AuthenticationRequestContext;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.identity.SecurityIdentityAugmentor;
@@ -30,12 +32,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
 /** Map roles retrieved from the security identity to the api internal roles, namely one of */
 @ApplicationScoped
 public class RoleMapper implements SecurityIdentityAugmentor {
 
     @Inject MetadataRegistryConfig config;
+
+    private static final Logger LOG = Logger.getLogger(RoleMapper.class);
 
     @Override
     public int priority() {
@@ -59,6 +64,7 @@ public class RoleMapper implements SecurityIdentityAugmentor {
 
     protected Supplier<SecurityIdentity> copyAndAugment(SecurityIdentity identity) {
         if (identity.isAnonymous()) {
+            debug(LOG, () -> "User is anonymous no augmention to be performed");
             return () -> identity;
         } else {
             QuarkusSecurityIdentity.Builder builder = QuarkusSecurityIdentity.builder(identity);
@@ -71,10 +77,15 @@ public class RoleMapper implements SecurityIdentityAugmentor {
             SecurityIdentity identity, QuarkusSecurityIdentity.Builder builder) {
         Set<String> roles = identity.getRoles();
         MultiMap<String, String> mappings = config.rolesMappings();
+        debug(LOG, () -> "Applying role mapping if needed...");
         if (roles != null && !roles.isEmpty()) {
             for (String r : roles) {
-
                 List<String> internalRoles = mappings.get(r);
+                debug(
+                        LOG,
+                        () ->
+                                "Retrieved %s internal roles using incoming role %s"
+                                        .formatted(internalRoles, r));
                 if (internalRoles != null)
                     builder.addRoles(
                             internalRoles.stream()

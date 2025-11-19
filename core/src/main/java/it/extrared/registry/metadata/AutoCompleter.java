@@ -15,16 +15,21 @@
  */
 package it.extrared.registry.metadata;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import it.extrared.registry.MetadataRegistryConfig;
 import java.util.Iterator;
 import java.util.List;
+import org.jboss.logging.Logger;
 
 /** Class responsible to apply an autocomplete to a metadata JSON from and existing one. */
 public class AutoCompleter {
 
     private final List<String> autocompleteFields;
+
+    private static final Logger LOG = Logger.getLogger(AutoCompleter.class);
 
     public AutoCompleter(List<String> autocompleteFields) {
         this.autocompleteFields = autocompleteFields;
@@ -39,10 +44,21 @@ public class AutoCompleter {
      * @param overlay the overlay JSON providing the fields' values to be set in the base JSON.
      */
     public void autocomplete(ObjectNode base, ObjectNode overlay) {
+        debug(
+                LOG,
+                () ->
+                        "Performing autocomplete setting missing fields in \n %s from \n %s"
+                                .formatted(base, overlay));
         Iterator<String> keys = overlay.fieldNames();
         while (keys.hasNext()) {
             String k = keys.next();
+            debug(LOG, () -> "Checking if %s is enabled for autocompletion".formatted(k));
             if (autocompleteFields.contains(k)) {
+                debug(
+                        LOG,
+                        () ->
+                                "Performing autocomplete for %s if base node is missing property"
+                                        .formatted(k));
                 JsonNode val = base.get(k);
                 if (val == null || val.isNull() || val.isMissingNode()) base.set(k, overlay.get(k));
             }

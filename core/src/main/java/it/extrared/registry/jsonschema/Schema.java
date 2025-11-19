@@ -15,6 +15,7 @@
  */
 package it.extrared.registry.jsonschema;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
 import static it.extrared.registry.utils.JsonUtils.nodeIsNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.jboss.logging.Logger;
 
 /**
  * A wrapper of a {@link com.networknt.schema.JsonSchema} that adds some method for validation and
@@ -45,6 +47,8 @@ public class Schema {
             Set.of("string", "number", "integer", "boolean", "null");
 
     private final MetadataRegistryConfig config;
+
+    private static final Logger LOG = Logger.getLogger(Schema.class);
 
     public Schema(JsonSchema schema, MetadataRegistryConfig config) {
         this.schema = schema;
@@ -93,6 +97,7 @@ public class Schema {
      * @return a List of messages with validation errors, empty if the validation was successful.
      */
     public List<String> validateSchemaCompliancy() {
+        debug(LOG, () -> "Validating JSON schema with internal compliancy validation rules...");
         JsonNode schemaNode = schema.getSchemaNode();
         JsonNode properties = schemaNode.get(PROPERTIES_KEY);
 
@@ -119,32 +124,41 @@ public class Schema {
                         });
         if (!invalidProperties.isEmpty())
             messages.add("Invalid property types found: " + String.join(", ", invalidProperties));
+        debug(LOG, () -> "Find %s issue with property types".formatted(invalidProperties.size()));
     }
 
     private void verifyReoId(List<String> messages, JsonNode properties) {
         JsonNode reoId = properties.get(config.reoidFieldName());
-        if (!nodeIsNotNull(reoId))
+        if (!nodeIsNotNull(reoId)) {
+            debug(LOG, () -> "No property %s found".formatted(config.reoidFieldName()));
             messages.add(
                     "Reo ID property with name %s missing from json schema"
                             .formatted(config.reoidFieldName()));
+        }
         JsonNode type = reoId.get(TYPE_KEY);
-        if (!nodeIsNotNull(type) && type.isTextual() && !"string".equals(type.asText()))
+        if (!nodeIsNotNull(type) && type.isTextual() && !"string".equals(type.asText())) {
+            debug(LOG, () -> "Wrong type for property %s found".formatted(config.reoidFieldName()));
             messages.add(
                     "Reo ID property with name %s should be of type string but is defined as type %s"
                             .formatted(config.reoidFieldName(), type.asText()));
+        }
     }
 
     private void verifyUpi(List<String> messages, JsonNode properties) {
         JsonNode upi = properties.get(config.upiFieldName());
-        if (!nodeIsNotNull(upi))
+        if (!nodeIsNotNull(upi)) {
+            debug(LOG, () -> "No property %s found".formatted(config.upiFieldName()));
             messages.add(
                     "UPI property with name %s missing from json schema"
                             .formatted(config.upiFieldName()));
+        }
         JsonNode type = upi.get(TYPE_KEY);
-        if (!nodeIsNotNull(type) && type.isTextual() && !"string".equals(type.asText()))
+        if (!nodeIsNotNull(type) && type.isTextual() && !"string".equals(type.asText())) {
+            debug(LOG, () -> "Wrong type found for property %s".formatted(config.upiFieldName()));
             messages.add(
                     "UPI property with name %s should be of type string but is defined as type %s"
                             .formatted(config.upiFieldName(), type.asText()));
+        }
     }
 
     private void verifyAutocompleteEnabledFor(List<String> messages, JsonNode properties) {
@@ -161,6 +175,11 @@ public class Schema {
             messages.add(
                     "Missing autocomplete properties in schema: "
                             + String.join(", ", missingAutocompletes));
+        debug(
+                LOG,
+                () ->
+                        "Found %s issues related to autocomplete properties in schema."
+                                .formatted(missingAutocompletes.size()));
     }
 
     private boolean isValidPropertyType(JsonNode propertySchema) {

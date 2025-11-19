@@ -15,6 +15,8 @@
  */
 package it.extrared.registry.jsonschema;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Uni;
@@ -34,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of a {@link JsonSchemaLoader} loading a json schema from a URI. The URI must be
@@ -46,12 +49,18 @@ public class URIJsonSchemaLoader extends AbstractJsonSchemaLoader {
 
     @Inject MetadataRegistryConfig config;
     @Inject ObjectMapper objectMapper;
+    private static final Logger LOG = Logger.getLogger(JsonSchemaLoaderChain.class);
 
     @Override
     protected Uni<JsonNode> loadSchemaInternal() {
         Optional<String> location = config.jsonSchemaLocation();
         Uni<JsonNode> result;
         if (location.isEmpty()) {
+            debug(
+                    LOG,
+                    () ->
+                            "No configured location provided for a JSON schema. Ignoring %s"
+                                    .formatted(getClass().getName()));
             result = Uni.createFrom().item(() -> null);
         } else {
             result =
@@ -65,11 +74,21 @@ public class URIJsonSchemaLoader extends AbstractJsonSchemaLoader {
         URI uri = URI.create(location);
 
         if ("file".equalsIgnoreCase(uri.getScheme()) || uri.getScheme() == null) {
+            debug(
+                    LOG,
+                    () ->
+                            "Found configured location as a file URI %s. Trying to load the schema"
+                                    .formatted(location));
             Path path = Paths.get(uri);
             return readStream(Unchecked.supplier(() -> Files.newInputStream(path)), location);
 
         } else {
             try {
+                debug(
+                        LOG,
+                        () ->
+                                "Found configured location %s. Trying to load the schema as a URL"
+                                        .formatted(location));
                 URL url = uri.toURL();
                 return readStream(Unchecked.supplier(url::openStream), location);
             } catch (MalformedURLException e) {

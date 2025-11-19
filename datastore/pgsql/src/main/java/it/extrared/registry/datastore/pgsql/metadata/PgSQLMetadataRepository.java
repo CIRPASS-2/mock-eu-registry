@@ -15,6 +15,8 @@
  */
 package it.extrared.registry.datastore.pgsql.metadata;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
@@ -34,10 +36,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import org.jboss.logging.Logger;
 
 /** PostgreSQL implementation of the {@link DPPMetadataRepository} */
 @ApplicationScoped
 public class PgSQLMetadataRepository implements DPPMetadataRepository {
+
+    private Logger LOG = Logger.getLogger(PgSQLMetadataRepository.class);
     @Inject MetadataRegistryConfig config;
 
     @Inject SchemaCache schemaCache;
@@ -65,11 +70,19 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
                 FROM dpp_metadata WHERE metadata ->> '%s' = $1 ORDER BY created_at DESC LIMIT 1
                 """
                         .formatted(config.upiFieldName());
+        debug(LOG, () -> "Executing query %s".formatted(sql));
         Uni<RowSet<DPPMetadataEntry>> rs =
                 conn.preparedQuery(sql)
                         .mapping(r -> ROW_MAPPER.apply(r, AS_JSON_META))
                         .execute(Tuple.of(upi));
-        return rs.map(SQLClientUtils::firstOrNull);
+        return rs.map(SQLClientUtils::firstOrNull)
+                .invoke(
+                        m ->
+                                debug(
+                                        LOG,
+                                        () ->
+                                                "Retrieved metadata by upi %s is %s"
+                                                        .formatted(upi, m)));
     }
 
     @Override
@@ -89,7 +102,8 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
                                         conn.preparedQuery(sql.formatted(sf))
                                                 .mapping(r -> ROW_MAPPER.apply(r, AS_JSON_META))
                                                 .execute(Tuple.wrap(new ArrayList<>(params))));
-        return rs.map(SQLClientUtils::firstOrNull);
+        return rs.map(SQLClientUtils::firstOrNull)
+                .invoke(m -> debug(LOG, () -> "Retrieved metadata by filters is %s".formatted(m)));
     }
 
     private String jsonFilter(List<Tuple2<String, Object>> filters, Schema schema) {
@@ -97,7 +111,10 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
         for (int i = 0; i < filters.size(); i++) {
             jsonFilters.add(jsonCondition(filters.get(i), schema, i + 1));
         }
-        return String.join(" AND ", jsonFilters);
+
+        String queryCondition = String.join(" AND ", jsonFilters);
+        debug(LOG, () -> "Result query condition is %s".formatted(queryCondition));
+        return queryCondition;
     }
 
     private String jsonCondition(Tuple2<String, Object> tuple, Schema schema, int paramIndex) {
@@ -120,6 +137,7 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
 
     @Override
     public Uni<DPPMetadataEntry> save(SqlConnection conn, DPPMetadataEntry metadata) {
+        debug(LOG, () -> "Persisting a metadata entry %s".formatted(metadata));
         metadata.setRegistryId(CommonUtils.generateTimeBasedUUID());
         Uni<RowSet<Row>> row =
                 conn.preparedQuery(INSERT)
@@ -129,12 +147,20 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
                                         metadata.getCreatedAt(),
                                         metadata.getModifiedAt(),
                                         JsonUtils.toVertxJson(metadata.getMetadata())));
-        return row.map(r -> metadata);
+        return row.map(r -> metadata)
+                .invoke(
+                        m ->
+                                debug(
+                                        LOG,
+                                        () ->
+                                                "Metadata entry %s persisted successfully"
+                                                        .formatted(m)));
     }
 
     @Override
     public Uni<DPPMetadataEntry> update(SqlConnection con, DPPMetadataEntry metadata) {
         metadata.setModifiedAt(LocalDateTime.now());
+        debug(LOG, () -> "Updating metadata entry %s".formatted(metadata));
         String upi = metadata.getMetadata().get(config.upiFieldName()).asText();
         Uni<RowSet<Row>> row =
                 con.preparedQuery(UPDATE.formatted(config.upiFieldName()))
@@ -143,6 +169,13 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
                                         metadata.getModifiedAt(),
                                         JsonUtils.toVertxJson(metadata.getMetadata()),
                                         upi));
-        return row.map(r -> metadata);
+        return row.map(r -> metadata)
+                .invoke(
+                        m ->
+                                debug(
+                                        LOG,
+                                        () ->
+                                                "Metadata entry %s  persisted successfully"
+                                                        .formatted(m)));
     }
 }

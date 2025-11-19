@@ -15,9 +15,12 @@
  */
 package it.extrared.registry.jsonschema;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 import java.util.function.Function;
+import org.jboss.logging.Logger;
 
 /**
  * Abstract implementation of a {@link it.extrared.registry.jsonschema.JsonSchemaLoader} providing
@@ -26,6 +29,8 @@ import java.util.function.Function;
 public abstract class AbstractJsonSchemaLoader implements JsonSchemaLoader {
 
     protected JsonSchemaLoader next;
+
+    private static final Logger LOG = Logger.getLogger(AbstractJsonSchemaLoader.class);
 
     @Override
     public void setNext(JsonSchemaLoader nextLoader) {
@@ -37,8 +42,21 @@ public abstract class AbstractJsonSchemaLoader implements JsonSchemaLoader {
         Uni<JsonNode> schema = loadSchemaInternal();
         Function<JsonNode, Uni<? extends JsonNode>> doNextWhenNull =
                 jn -> {
-                    if (jn == null) return next.loadSchema();
-                    else return Uni.createFrom().item(() -> jn);
+                    if (jn == null) {
+                        debug(
+                                LOG,
+                                () ->
+                                        "No JSON schema found with loader %s, trying next loader..."
+                                                .formatted(getClass().getName()));
+                        return next.loadSchema();
+                    } else {
+                        debug(
+                                LOG,
+                                () ->
+                                        "JSON schema found with loader %s"
+                                                .formatted(getClass().getName()));
+                        return Uni.createFrom().item(() -> jn);
+                    }
                 };
         return schema.flatMap(doNextWhenNull);
     }
