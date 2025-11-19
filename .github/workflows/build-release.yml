@@ -6,7 +6,7 @@ on:
       - '*'
 jobs:
   pgsql-oidc:
-    uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-build-release.yml@develop
+    uses: CIRPASS-2/actions/.github/workflows/quarkus-build-release.yml@main
     with:
       java_version: '21'
       java_distribution: 'temurin'
@@ -18,7 +18,7 @@ jobs:
       profile_maven: 'pgsql-oidc'
       target_maven_path: './main/target/'
   mariadb-oidc:
-    uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-build-release.yml@develop
+    uses: CIRPASS-2/actions/.github/workflows/quarkus-build-release.yml@main
     with:
       java_version: '21'
       java_distribution: 'temurin'

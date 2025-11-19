@@ -6,7 +6,7 @@ on:
 
 jobs:
   shared-job:
-    uses: extra-red-srl/dpp-pipelines/.github/workflows/quarkus-test.yml@main
+    uses: CIRPASS-2/actions/.github/workflows/quarkus-test.yml@main
     with:
       java_version: '21'
       java_distribution: 'temurin'
