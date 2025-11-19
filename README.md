@@ -38,7 +38,7 @@ The application provides two maven profiles:
 - `pgsql-oidc` profile builds an application using postgresql as a database and oidc as the authentication method.
 - `mariadb-oidc` profile builds an application using mariadb as a database and oidc as the authentication method.
 
-Artifacts and docker images are available [here](https://github.com/extra-red-srl/dpp-metadata-registry/releases)
+Artifacts and docker images are available [here](https://github.com/cirpass-2/dpp-metadata-registry/releases)
 ### Build the Application
 ```bash
 mvn clean install -P pgsql-oidc
@@ -247,7 +247,7 @@ version: '3.8'
 
 services:
   registry:
-    image: ghcr.io/extra-red-srl/dpp-metadata-registry-pgsql-oidc:latest
+    image: ghcr.io/cirpass-2/dpp-metadata-registry-pgsql-oidc:latest
     ports:
       - "8080:8080"
     environment:
@@ -295,7 +295,7 @@ version: '3.8'
 
 services:
   registry:
-    image: ghcr.io/extra-red-srl/dpp-metadata-registry-mariadb-oidc:latest
+    image: ghcr.io/cirpass-2/dpp-metadata-registry-mariadb-oidc:latest
     ports:
       - "8080:8080"
     environment:
@@ -384,7 +384,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: ghcr.io/extra-red-srl/dpp-metadata-registry-pgsql-oidc:latest
+        image: ghcr.io/cirpass-2/dpp-metadata-registry-pgsql-oidc:latest
         ports:
         - containerPort: 8080
         envFrom:
