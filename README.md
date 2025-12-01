@@ -1,6 +1,6 @@
-# DPP Metadata Registry
+# Mock EU Registry
 
-An example implementation of a Digital Product Passport (DPP) Metadata Registry.
+A mock implementation of the EU Registry for Digital Product Passport (DPP).
 
 ## Overview
 
@@ -774,7 +774,7 @@ The system searches each path in order until roles are found.
 This project is licensed under the Apache License 2.0 - see below for details.
 
 ```
-Copyright 2025-2026 ExtraRed
+Copyright 2024-2027 CIRPASS-2
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -808,3 +808,15 @@ All contributions will be reviewed before being merged.
 For questions, issues, or support requests, please contact:
 
 **marco.volpini@extrared.it**
+
+
+© CIRPASS-2 Consortium, 2024-2027
+
+<img width="832" height="128" alt="image" src="https://github.com/user-attachments/assets/7ad1fa77-65f3-4379-909d-614f64587d40" />
+
+
+The CIRPASS-2 project receives funding under the European Union's DIGITAL EUROPE PROGRAMME under the GA No 101158775.
+
+**Important disclaimer:**
+All software and artifacts produced by the CIRPASS-2 consortium are designed for exploration and are provided for information purposes only. They should not be interpreted as being either complete, exhaustive, or normative. The CIRPASS-2 consortium partners are not liable for any damage that could result from making use of this information.
+Technical interpretations of the European Digital Product Passport system expressed in these artifacts are those of the author(s) only and do not necessarily reflect those of the European Union, European Commission, or the European Health and Digital Executive Agency (HADEA). Neither the European Union, the European Commission nor the granting authority can be held responsible for them. Technical interpretations of the European Digital Product Passport system expressed in these artifacts are those of the author(s) only and should not be interpreted as reflecting those of CEN-CENELEC JTC 24.
