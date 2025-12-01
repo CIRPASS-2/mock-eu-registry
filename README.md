@@ -212,7 +212,7 @@ quarkus.oidc.credentials.secret=my-secret
 registry-auth.oidc.role-claim-path=group,realm_access.roles
 
 # Application Configuration
-registry.autocompletion-enabled-for=commodityCode,facilitiesId,dataCarrierTypes
+registry.autocompletion-enabled-for=commodityCode,facilitiesId
 registry.update-strategy=MODIFY
 registry.upi-field-name=upi
 registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
@@ -234,7 +234,7 @@ quarkus.oidc.credentials.secret=my-secret
 registry-auth.oidc.role-claim-path=group,realm_access.roles
 
 # Application Configuration
-registry.autocompletion-enabled-for=commodityCode,facilitiesId,dataCarrierTypes
+registry.autocompletion-enabled-for=commodityCode,facilitiesId
 registry.update-strategy=MODIFY
 registry.upi-field-name=upi
 registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
@@ -264,7 +264,7 @@ services:
       REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH: group,realm_access.roles
       
       # Application Configuration
-      AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId,dataCarrierTypes
+      AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId
       REGISTRY_UPDATE_STRATEGY: MODIFY
       REGISTRY_UPI_FIELD_NAME: upi
       REGISTRY_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
@@ -312,7 +312,7 @@ services:
       REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH: group,realm_access.roles
       
       # Application Configuration
-      AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId,dataCarrierTypes
+      AUTOCOMPLETION_ENABLED_FOR: commodityCode,facilitiesId
       REGISTRY_UPDATE_STRATEGY: MODIFY
       REGISTRY_UPI_FIELD_NAME: upi
       REGISTRY_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
@@ -351,7 +351,7 @@ data:
   QUARKUS_OIDC_AUTH_SERVER_URL: "https://keycloak.example.com/realms/myrealm"
   QUARKUS_OIDC_CLIENT_ID: "my-client"
   REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH: "group,realm_access.roles"
-  AUTOCOMPLETION_ENABLED_FOR: "commodityCode,facilitiesId,dataCarrierTypes"
+  AUTOCOMPLETION_ENABLED_FOR: "commodityCode,facilitiesId"
   REGISTRY_UPDATE_STRATEGY: "MODIFY"
   REGISTRY_UPI_FIELD_NAME: "upi"
   REGISTRY_ROLE_MAPPINGS: "keycloak_admin:admin,keycloak_user:eu,keycloak_operator:eo"
@@ -433,7 +433,6 @@ The application ships with a comprehensive default schema that includes:
     "liveURL",
     "backupURL",
     "commodityCode",
-    "dataCarrierTypes",
     "granularityLevel"
   ],
   "properties": {
@@ -496,29 +495,6 @@ The application ships with a comprehensive default schema that includes:
         "85176200",
         "8517620090"
       ]
-    },
-    "dataCarrierTypes": {
-      "type": "array",
-      "description": "Types of data carriers associated with the product",
-      "uniqueItems": true,
-      "minItems": 1,
-      "examples": [
-        ["QR_CODE","RFID"]
-      ],
-      "items": {
-        "type": "string",
-        "enum": [
-          "QR_CODE",
-          "DATA_MATRIX",
-          "BARCODE_EAN",
-          "BARCODE_UPC",
-          "BARCODE_GS1",
-          "RFID",
-          "NFC",
-          "AZTEC_CODE",
-          "PDF417"
-        ]
-      }
     },
     "granularityLevel": {
       "type": "string",
@@ -628,7 +604,6 @@ Content-Type: application/json
   "liveURL": "https://dpp.example.com/product/12345",
   "backupURL": "https://dpp.example.com/product/backup/12345",
   "commodityCode": "85176200",
-  "dataCarrierTypes": ["QR_CODE", "RFID"],
   "granularityLevel": "ITEM",
   "deactivated": false
 }
@@ -645,7 +620,6 @@ Content-Type: application/json
     "liveURL": "https://dpp.example.com/product/12345",
     "backupURL": "https://dpp.example.com/product/backup/12345",
     "commodityCode": "85176200",
-    "dataCarrierTypes": ["QR_CODE", "RFID"],
     "granularityLevel": "ITEM",
     "deactivated": false
   }
