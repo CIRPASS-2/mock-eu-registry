@@ -10,7 +10,6 @@
     "backupURL",
     "commodityCode",
     "facilitiesId",
-    "dataCarrierTypes",
     "granularityLevel"
   ],
   "properties": {
@@ -73,29 +72,6 @@
         "85176200",
         "8517620090"
       ]
-    },
-    "dataCarrierTypes": {
-      "type": "array",
-      "description": "Types of data carriers associated with the product",
-      "uniqueItems": true,
-      "minItems": 1,
-      "examples": [
-        ["QR_CODE","RFID"]
-      ],
-      "items": {
-        "type": "string",
-        "enum": [
-          "QR_CODE",
-          "DATA_MATRIX",
-          "BARCODE_EAN",
-          "BARCODE_UPC",
-          "BARCODE_GS1",
-          "RFID",
-          "NFC",
-          "AZTEC_CODE",
-          "PDF417"
-        ]
-      }
     },
     "granularityLevel": {
       "type": "string",
