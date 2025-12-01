@@ -1,5 +1,5 @@
 /*
- * Copyright 2025-2026 ExtraRed
+ * Copyright 2024-2027 CIRPASS-2
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,9 @@ public class JsonMerger {
 
     private JsonNode newValue(JsonNode baseVal, JsonNode overlayVal) {
         JsonNode ret;
-        if (baseVal.isNull() && overlayVal.isNull()) {
+        if (baseVal == null) ret = overlayVal;
+        else if (overlayVal == null) ret = baseVal;
+        else if (baseVal.isNull() && overlayVal.isNull()) {
             ret = baseVal;
         } else if (baseVal.isArray() && overlayVal.isArray()) {
             ArrayNode baseArr = (ArrayNode) baseVal;
