@@ -36,11 +36,11 @@ package -Dnative
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.native -t quarkus/dpp-metadata-registry .
+# docker build -f src/main/docker/Dockerfile.native -t quarkus/mock-eu-registry .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/dpp-metadata-registry
+# docker run -i --rm -p 8080:8080 quarkus/mock-eu-registry
 #
 ###
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10

@@ -17,12 +17,12 @@
 
     <parent>
         <groupId>it.extrared</groupId>
-        <artifactId>dpp-metadata-registry-parent</artifactId>
+        <artifactId>mock-eu-registry-parent</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dpp-metadata-registry-datastore</artifactId>
+    <artifactId>mock-eu-registry-datastore</artifactId>
     <packaging>pom</packaging>
 
     <modules>

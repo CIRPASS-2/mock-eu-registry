@@ -21,11 +21,11 @@
 #
 # Then, build the image with:
 #
-# docker build -f main/src/main/docker/Dockerfile.jvm -t quarkus/dpp-metadata-registry-jvm .
+# docker build -f main/src/main/docker/Dockerfile.jvm -t quarkus/mock-eu-registry-jvm .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/dpp-metadata-registry-jvm
+# docker run -i --rm -p 8080:8080 quarkus/mock-eu-registry-jvm
 #
 # If you want to include the debug port into your docker image
 # you will have to expose the debug port (default 5005 being the default) like this :  EXPOSE 8080 5005.
@@ -34,7 +34,7 @@
 #
 # Then run the container using :
 #
-# docker run -i --rm -p 8080:8080 quarkus/dpp-metadata-registry-jvm
+# docker run -i --rm -p 8080:8080 quarkus/mock-eu-registry-jvm
 #
 # This image uses the `run-java.sh` script to run the application.
 # This scripts computes the command line to execute your Java application, and
