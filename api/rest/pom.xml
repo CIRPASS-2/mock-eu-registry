@@ -17,12 +17,12 @@
 
     <parent>
         <groupId>it.extrared</groupId>
-        <artifactId>dpp-metadata-registry-api-parent</artifactId>
+        <artifactId>mock-eu-registry-api-parent</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dpp-metadata-registry-api-rest</artifactId>
+    <artifactId>mock-eu-registry-api-rest</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -36,7 +36,7 @@
         </dependency>
         <dependency>
             <groupId>it.extrared</groupId>
-            <artifactId>dpp-metadata-registry-core</artifactId>
+            <artifactId>mock-eu-registry-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -51,7 +51,7 @@
         </dependency>
         <dependency>
             <groupId>it.extrared</groupId>
-            <artifactId>dpp-metadata-registry-pgsql-datastore</artifactId>
+            <artifactId>mock-eu-registry-pgsql-datastore</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

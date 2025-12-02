@@ -43,7 +43,7 @@ package -Dnative
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/dpp-metadata-registry
+# docker run -i --rm -p 8080:8080 quarkus/mock-eu-registry
 #
 ###
 FROM quay.io/quarkus/quarkus-micro-image:2.0

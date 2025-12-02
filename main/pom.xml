@@ -18,23 +18,23 @@
 
     <parent>
         <groupId>it.extrared</groupId>
-        <artifactId>dpp-metadata-registry-parent</artifactId>
+        <artifactId>mock-eu-registry-parent</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>dpp-metadata-registry</artifactId>
+    <artifactId>mock-eu-registry</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>it.extrared</groupId>
-            <artifactId>dpp-metadata-registry-api-rest</artifactId>
+            <artifactId>mock-eu-registry-api-rest</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>it.extrared</groupId>
-            <artifactId>dpp-metadata-registry-core</artifactId>
+            <artifactId>mock-eu-registry-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -75,7 +75,7 @@
                 </dependency>
                 <dependency>
                     <groupId>it.extrared</groupId>
-                    <artifactId>dpp-metadata-registry-pgsql-datastore</artifactId>
+                    <artifactId>mock-eu-registry-pgsql-datastore</artifactId>
                     <version>${project.version}</version>
                 </dependency>
             </dependencies>
@@ -92,7 +92,7 @@
                 </dependency>
                 <dependency>
                     <groupId>it.extrared</groupId>
-                    <artifactId>dpp-metadata-registry-mariadb-datastore</artifactId>
+                    <artifactId>mock-eu-registry-mariadb-datastore</artifactId>
                     <version>${project.version}</version>
                 </dependency>
             </dependencies>
