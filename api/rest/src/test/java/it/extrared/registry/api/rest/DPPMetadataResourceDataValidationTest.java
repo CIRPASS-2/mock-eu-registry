@@ -45,7 +45,7 @@ public class DPPMetadataResourceDataValidationTest {
     public static class DPPValidationProfile implements QuarkusTestProfile {
         @Override
         public Map<String, String> getConfigOverrides() {
-            return Map.of("registry.dpp.validation.enabled", "true");
+            return Map.of("registry.dpp-validation-enabled", "true");
         }
     }
 }
