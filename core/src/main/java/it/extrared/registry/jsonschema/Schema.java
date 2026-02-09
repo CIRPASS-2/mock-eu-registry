@@ -152,6 +152,7 @@ public class Schema {
                     "UPI property with name %s missing from json schema"
                             .formatted(config.upiFieldName()));
         }
+
         JsonNode type = upi.get(TYPE_KEY);
         if (!nodeIsNotNull(type) && type.isTextual() && !"string".equals(type.asText())) {
             debug(LOG, () -> "Wrong type found for property %s".formatted(config.upiFieldName()));

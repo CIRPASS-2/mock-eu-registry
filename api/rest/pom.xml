@@ -50,6 +50,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5-mockito</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>it.extrared</groupId>
             <artifactId>mock-eu-registry-pgsql-datastore</artifactId>
             <version>${project.version}</version>

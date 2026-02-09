@@ -24,6 +24,7 @@ import io.smallrye.mutiny.tuples.Tuple2;
 import io.vertx.mutiny.sqlclient.Pool;
 import io.vertx.mutiny.sqlclient.SqlConnection;
 import it.extrared.registry.MetadataRegistryConfig;
+import it.extrared.registry.dpp.validation.DPPValidator;
 import it.extrared.registry.exceptions.SchemaValidationException;
 import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.update.DPPMetadataUpdater;
@@ -47,6 +48,7 @@ public class DPPMetadataService {
     @Inject DPPMetadataUpdater updater;
 
     @Inject SchemaCache schemaCache;
+    @Inject DPPValidator dppValidator;
 
     @Inject Pool pool;
 
@@ -73,14 +75,8 @@ public class DPPMetadataService {
                         v -> {
                             if (!metadata.has(config.upiFieldName()))
                                 throw new SchemaValidationException(
-                                        Set.of(
-                                                ValidationMessage.builder()
-                                                        .message(
-                                                                "DPP metadata must declare a %s field"
-                                                                        .formatted(
-                                                                                config
-                                                                                        .upiFieldName()))
-                                                        .build()));
+                                        "DPP metadata must declare a %s field"
+                                                .formatted(config.upiFieldName()));
                         });
     }
 
@@ -104,6 +100,14 @@ public class DPPMetadataService {
                         });
     }
 
+    private Uni<DPPMetadataEntry> applyValidation(DPPMetadataEntry entry) {
+        if (config.dppValidationEnabled()) {
+            return dppValidator.validate(entry);
+        } else {
+            return Uni.createFrom().item(entry);
+        }
+    }
+
     private Uni<? extends DPPMetadataEntry> doUpdate(
             DPPMetadataEntry modifier, DPPMetadataEntry modified, SqlConnection conn) {
         modified.setModifiedAt(LocalDateTime.now());
@@ -113,17 +117,17 @@ public class DPPMetadataService {
                                 (ObjectNode) modified.getMetadata(),
                                 (ObjectNode) modifier.getMetadata()));
         Uni<Void> validate = validate(modified.getMetadata());
-        Uni<? extends DPPMetadataEntry> res =
-                updater.applyUpdate(config.updateStrategy(), conn, modified);
-        return validate.flatMap(v -> res);
+        Uni<DPPMetadataEntry> dppValidation = applyValidation(modified);
+        return validate.flatMap(v -> dppValidation)
+                .flatMap(me -> updater.applyUpdate(config.updateStrategy(), conn, me));
     }
 
     private Uni<? extends DPPMetadataEntry> doSave(
             DPPMetadataEntry incoming, SqlConnection connection) {
         incoming.setCreatedAt(LocalDateTime.now());
         Uni<Void> validate = validate(incoming.getMetadata());
-        Uni<? extends DPPMetadataEntry> res = repository.save(connection, incoming);
-        return validate.flatMap(v -> res);
+        Uni<DPPMetadataEntry> applyCallbacks = applyValidation(incoming);
+        return validate.flatMap(v -> applyCallbacks).flatMap(m -> repository.save(connection, m));
     }
 
     private Uni<Void> applyAutoComplete(
