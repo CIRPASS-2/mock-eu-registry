@@ -66,6 +66,19 @@ public interface MetadataRegistryConfig {
     String reoidFieldName();
 
     /**
+     * @return the field name of the live url in the JSON. Default is liveUrl.
+     */
+    @WithDefault("liveURL")
+    String liveUrlFieldName();
+
+    /**
+     * @return true if the registry should try to validate the DPP data associated with the input
+     *     metadata entry.
+     */
+    @WithDefault("false")
+    boolean dppValidationEnabled();
+
+    /**
      * @return comma separated list of mappings between external IdP roles and internal roles (see
      *     {@link Roles}) as {ext_rolename}:{internal_roleName} ->
      *     my_ext_role:my_internal_role,my_ext_role2:my_internal_role2

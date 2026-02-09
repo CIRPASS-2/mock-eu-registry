@@ -179,14 +179,14 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     private String jsonCondition(Tuple2<String, Object> tuple, Schema schema) {
         String jproperty = tuple.getItem1();
         String type = schema.getPropertyType(jproperty);
-        String pgType = toPgSQLJsonType(type);
-        if (pgType.equals("UNSIGNED")) {
+        String mdbType = toMariaJsonType(type);
+        if (mdbType.equals("UNSIGNED")) {
             return "CAST(JSON_VALUE(metadata,'$.%s') AS UNSIGNED) = ?".formatted(jproperty);
         }
         return "JSON_VALUE(metadata,'$.%s') = ?".formatted(jproperty);
     }
 
-    private String toPgSQLJsonType(String schemaType) {
+    private String toMariaJsonType(String schemaType) {
         return switch (schemaType) {
             case "string" -> "VARCHAR";
             case "boolean" -> "BOOLEAN";

@@ -5,7 +5,8 @@
   "type": "object",
   "required": [
     "upi",
-    "reoId"
+    "reoId",
+    "commodityCode"
   ],
   "properties": {
     "upi": {

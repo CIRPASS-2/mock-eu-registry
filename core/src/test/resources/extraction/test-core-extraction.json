@@ -1,0 +1,81 @@
+{
+  "searchFields":["productName","weight","carbonFootprint","granularity"],
+  "knownOntology":{
+    "fields":
+    {
+      "productName": {
+        "targetType":"STRING",
+        "reference": {
+          "key":"productName",
+          "nativeType": "STRING"
+        }
+      },
+      "weight": {
+        "targetType":"NUMERIC",
+        "reference": {
+        "@type":"Weight",
+        "key": "hasProperty",
+        "child": {
+          "key":"numericalValue",
+          "nativeType": "NUMERIC"
+        }
+          }
+      },
+      "carbonFootprint":{
+        "targetType":"NUMERIC",
+        "reference": {
+          "@type":"CarbonFootprint",
+          "key": "hasProperty",
+          "child": {
+            "nativeType": "NUMERIC",
+            "key":"numericalValue"
+          }
+        }
+      },
+      "granularity":{
+        "targetType":"STRING",
+        "reference": {
+          "@type": "DPP",
+          "key": "hasDPP",
+          "child": {
+            "key": "granularity",
+            "nativeType": "STRING"
+          }
+        }
+      }
+    }
+  },
+  "noOntology": {
+    "fields":
+    {
+      "productName": {
+        "type":"STRING",
+        "variants":["productName","product_name","modelName","model_name"],
+        "variantsWithContext":{
+          "context": ["model","product"],
+          "field": ["productName","product_name","modelName","model_name","name"]
+        }
+      },
+      "weight": {
+        "type":"NUMERIC",
+        "variants": ["weight","weight_g","weight_kg","weightG","weightKg"],
+        "variantsWithContext": {
+          "context": ["dimension"],
+          "field": ["weight","weight_g","weight_kg","weightG","weightKg"]
+        }
+      },
+      "carbonFootprint": {
+        "type": "NUMERIC",
+        "variants": ["carbonFootprint","carbon_footprint"],
+        "variantsWithContext": {
+          "context": ["carbonFootprint","carbon_footprint"],
+          "field": ["total_kg_co2","value","totalKgCo2","kgCo2","numericalValue"]
+        }
+      },
+      "granularity": {
+        "type": "STRING",
+        "variants": ["granularity","granularity_level","granularityLevel"]
+      }
+    }
+  }
+}
