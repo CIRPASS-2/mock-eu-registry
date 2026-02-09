@@ -1,5 +1,6 @@
 package it.extrared.registry.dpp.validation;
 
+/** Represent an invalid property entry in the validation report. */
 public class InvalidProperty {
     private String property;
 

@@ -9,11 +9,18 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
 
+/** Class providing functionality to retrieve a DPP from the decentralized repository. */
 @ApplicationScoped
 public class DPPFetcher {
 
     @Inject WebClient webClient;
 
+    /**
+     * Given an url it issues an http request with supported mime types and returns the payload
+     *
+     * @param url the url to invoke.
+     * @return the response.
+     */
     public Uni<HttpResponse<Buffer>> fetchDPP(String url) {
         List<String> mimes = List.of("application/json", "application/ld+json");
         HttpRequest<Buffer> request = webClient.getAbs(url);

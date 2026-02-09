@@ -14,6 +14,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+/**
+ * Class providing funcionality to validate a DPP associated to a DPP metadata entry (via live url).
+ */
 @ApplicationScoped
 public class DPPValidator {
 
@@ -23,6 +26,12 @@ public class DPPValidator {
 
     @Inject MetadataRegistryConfig config;
 
+    /**
+     * Given a {@link DPPMetadataEntry} retrieved the associated DPP data through its live URL.
+     *
+     * @param entry the registry entry.
+     * @return the entry possbily decorated with the validation report.
+     */
     public Uni<DPPMetadataEntry> validate(DPPMetadataEntry entry) {
         String url = getUrl(entry);
         if (url == null)
@@ -35,7 +44,7 @@ public class DPPValidator {
                 .map(r -> new ValidatedMetadataEntry(entry, r));
     }
 
-    public Uni<ValidationReport> validate(HttpResponse<Buffer> dppResp) {
+    private Uni<ValidationReport> validate(HttpResponse<Buffer> dppResp) {
         if (is2xx(dppResp.statusCode())) {
             String cType = dppResp.getHeader("Content-Type");
             byte[] body = dppResp.bodyAsBuffer().getBytes();

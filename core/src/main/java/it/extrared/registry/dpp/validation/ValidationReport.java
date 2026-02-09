@@ -2,6 +2,7 @@ package it.extrared.registry.dpp.validation;
 
 import java.util.List;
 
+/** Represent the validation report of the validator service. */
 public class ValidationReport {
 
     private boolean valid;
