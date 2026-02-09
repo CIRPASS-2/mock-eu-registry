@@ -39,7 +39,8 @@ public class DPPMetadataServiceAppendTest extends TestSupport {
     {
         "reoId":"6789",
         "upi":"6789",
-        "commodityCode":"122267310"
+        "commodityCode":"122267310",
+        "liveURL":"localhost:1111/dpp"
     }
     """;
 

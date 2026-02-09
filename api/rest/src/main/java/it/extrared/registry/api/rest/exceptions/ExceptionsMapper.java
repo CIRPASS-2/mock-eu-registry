@@ -15,9 +15,13 @@
  */
 package it.extrared.registry.api.rest.exceptions;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.extrared.registry.api.rest.RestUtils;
+import it.extrared.registry.exceptions.InvalidDPPException;
 import it.extrared.registry.exceptions.JsonSchemaException;
 import it.extrared.registry.exceptions.SchemaValidationException;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
@@ -36,5 +40,13 @@ public class ExceptionsMapper {
                 Response.Status.BAD_REQUEST,
                 new ErrorPayload(
                         "The DPP metadata payload is not valid: %s".formatted(e.getMessage())));
+    }
+
+    @ServerExceptionMapper
+    public RestResponse<JsonNode> mapException(InvalidDPPException e) {
+        ObjectMapper objectMapper = CDI.current().select(ObjectMapper.class).get();
+        return RestUtils.respWithBodyAndStatus(
+                Response.Status.BAD_REQUEST,
+                objectMapper.convertValue(e.getValidationReport(), JsonNode.class));
     }
 }

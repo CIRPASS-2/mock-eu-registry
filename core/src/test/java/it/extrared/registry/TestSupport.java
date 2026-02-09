@@ -15,4 +15,75 @@
  */
 package it.extrared.registry;
 
-public class TestSupport {}
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+
+import io.quarkus.test.InjectMock;
+import io.smallrye.mutiny.Uni;
+import io.vertx.mutiny.core.MultiMap;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.ext.web.client.HttpResponse;
+import it.extrared.registry.dpp.DPPFetcher;
+import it.extrared.registry.dpp.validation.ValidationReport;
+import it.extrared.registry.dpp.validation.ValidationRestClient;
+import java.util.Objects;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+
+public class TestSupport {
+    @InjectMock @RestClient ValidationRestClient validationRestClient;
+
+    @InjectMock DPPFetcher dppFetcher;
+
+    @BeforeEach
+    public void beforeEach() {
+        String mockDpp =
+                """
+                {
+                  "id":1,
+                  "productName":"just a mock"
+                }
+                """;
+        String mockDpp2 =
+                """
+                {
+                  "id":2,
+                  "productName":"just a mock 2"
+                }
+                """;
+        ValidationReport validationReport = new ValidationReport();
+        validationReport.setValid(true);
+        validationReport.setValidatedWith("validated with mocks");
+        ValidationReport invalidReport = new ValidationReport();
+        invalidReport.setValid(false);
+        invalidReport.setValidatedWith("validated with mocks");
+        Mockito.doReturn(Uni.createFrom().item(mockResponse(mockDpp)))
+                .when(dppFetcher)
+                .fetchDPP(eq("localhost:1111/dpp"));
+        Mockito.doReturn(Uni.createFrom().item(mockResponse(mockDpp2)))
+                .when(dppFetcher)
+                .fetchDPP(eq("localhost:2222/dpp"));
+        Mockito.doReturn(Uni.createFrom().item(validationReport))
+                .when(validationRestClient)
+                .validate(
+                        ArgumentMatchers.argThat(b -> Objects.equals(new String(b), mockDpp)),
+                        any());
+        Mockito.doReturn(Uni.createFrom().item(invalidReport))
+                .when(validationRestClient)
+                .validate(
+                        ArgumentMatchers.argThat(b -> Objects.equals(new String(b), mockDpp2)),
+                        any());
+    }
+
+    private HttpResponse<Buffer> mockResponse(String body) {
+        HttpResponse<Buffer> response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.bodyAsBuffer()).thenReturn(Buffer.buffer(body));
+        MultiMap headers =
+                MultiMap.caseInsensitiveMultiMap().add("Content-Type", "application/json");
+        Mockito.when(response.headers()).thenReturn(headers);
+        Mockito.when(response.statusCode()).thenReturn(200);
+        return response;
+    }
+}
