@@ -15,6 +15,7 @@
  */
 package it.extrared.registry.dpp.validation;
 
+import static it.extrared.registry.utils.CommonUtils.debug;
 import static it.extrared.registry.utils.CommonUtils.is2xx;
 
 import io.smallrye.mutiny.Uni;
@@ -28,12 +29,15 @@ import it.extrared.registry.metadata.DPPMetadataEntry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
 
 /**
  * Class providing funcionality to validate a DPP associated to a DPP metadata entry (via live url).
  */
 @ApplicationScoped
 public class DPPValidator {
+
+    private static final Logger LOGGER = Logger.getLogger(DPPValidator.class);
 
     @Inject DPPFetcher dppFetcher;
 
@@ -49,6 +53,7 @@ public class DPPValidator {
      */
     public Uni<DPPMetadataEntry> validate(DPPMetadataEntry entry) {
         String url = getUrl(entry);
+        debug(LOGGER, () -> "retrieved URL for decentralized repository %s".formatted(url));
         if (url == null)
             throw new SchemaValidationException(
                     "Expected to find a live url in metadata under field name %s but did not find any."
@@ -63,9 +68,15 @@ public class DPPValidator {
         if (is2xx(dppResp.statusCode())) {
             String cType = dppResp.getHeader("Content-Type");
             byte[] body = dppResp.bodyAsBuffer().getBytes();
+            debug(
+                    LOGGER,
+                    () ->
+                            "received DPP with content type %s and payload %s"
+                                    .formatted(cType, new String(body)));
             Uni<ValidationReport> validationReportUni = validationRestClient.validate(body, cType);
             return validationReportUni.invoke(
                     r -> {
+                        debug(LOGGER, () -> "obtained validation response...");
                         if (!r.isValid()) throw new InvalidDPPException(r);
                     });
         } else {
@@ -76,6 +87,11 @@ public class DPPValidator {
     }
 
     private String getUrl(DPPMetadataEntry entry) {
+        debug(
+                LOGGER,
+                () ->
+                        "Trying retrieving the live URL using field name %s"
+                                .formatted(config.liveUrlFieldName()));
         if (entry.getMetadata() != null && entry.getMetadata().has(config.liveUrlFieldName()))
             return entry.getMetadata().get(config.liveUrlFieldName()).asText();
         return null;
