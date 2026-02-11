@@ -50,7 +50,7 @@
       "type": "string",
       "format": "uri",
       "description": "Primary URL to retrieve the related DPP data",
-      "pattern": "^https://",
+      "pattern": "^http",
       "examples": [
         "https://dpp.example.com/product/12345"
       ]
@@ -59,7 +59,7 @@
       "type": "string",
       "format": "uri",
       "description": "Backup URL to retrieve the related DPP data",
-      "pattern": "^https://",
+      "pattern": "^http",
       "examples": [
         "https://backup-dpp.example.com/product/12345"
       ]
