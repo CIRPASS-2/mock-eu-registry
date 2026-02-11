@@ -29,6 +29,7 @@ This application provides an HTTP-based registry service for persisting and mana
 - **OpenID Connect authentication** with role-based access control
 - **Autocompletion capabilities** for metadata fields
 - **Configurable update strategies** for handling duplicate UPI entries
+- **Integration with the DPP validator** to validate DPP data before persisting the DPP metadata entry. DPP validator available on the [CIRPASS-2 GitHub](https://github.com/CIRPASS-2/dpp-validator?tab=readme-ov-file#dpp-validator)
 
 ## Table of Contents
 
@@ -43,6 +44,7 @@ This application provides an HTTP-based registry service for persisting and mana
 - [REST API](#rest-api)
   - [Metadata Endpoints](#metadata-endpoints)
   - [Schema Management Endpoints](#schema-management-endpoints)
+- [DPP data validation](#dpp-data-validation)
 - [Authentication & Authorization](#authentication--authorization)
 
 ## Quick Start
@@ -177,14 +179,22 @@ CREATE TABLE IF NOT EXISTS json_schemas (
 | `registry.role-mappings`              | `REGISTRY_ROLE_MAPPINGS`        | Comma-separated mappings between external and internal roles          | -       |
 | `registry.json-schema-location`       | `REGISTRY_JSON_SCHEMA_LOCATION` | Location of custom JSON schema (URL, file URI, or absolute path)      | -       |
 
-#### HTTP Configuration
 
+#### DPP validation configuration
+
+| Variable                                 | Environment Variable                     | Description                                                                                                               | Default |
+|------------------------------------------|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|---------|
+| `registry.dpp-validation-enabled`        | `REGISTRY_DPP_VALIDATION_ENABLED`        | Flag to enabled/disable validation on the DPP data available at the live URL endpoint                                     | false   |
+| `quarkus.rest-client.dpp-validation.url` | `QUARKUS_REST_CLIENT_DPP_VALIDATION_URL` | Base URL for the DPP validation service. It must be set only if the DPP validation is enabled                             | null    |
+
+
+#### HTTP Configuration
 
 | Variable            | Environment Variable | Description              | Default |
 |---------------------|----------------------|--------------------------|---------|
 | `quarkus.http.port` | `QUARKUS_HTTP_PORT`  | HTTP port of the service | 8080    |
 
-
+debug(LOGGER,()->"received DPP with content type %s".formatted());
 #### Configuration Notes
 
 **Update Strategy**
@@ -725,6 +735,75 @@ Removes the currently active schema. After deletion, the system reverts to the p
 1. If other schemas were submitted via API, the second-most-recent becomes active
 2. Otherwise, reverts to the configured schema file (if `registry.json-schema-location` is set)
 3. Otherwise, reverts to the default embedded schema
+
+
+## DPP data validation
+
+When DPP validation is enabled (see the [DPP validation configuration section](#dpp-validation-configuration)), the registry retrieves the DPP from the decentralized repository using the live URL specified in the registry entry.
+The registry decorates the HTTP request with an `Accept` header set to either `application/json` or `application/ld+json`.
+Upon receiving the response, the DPP payload is validated by the DPP validator. **The registry persists the metadata only if validation succeeds.**
+When validation is enabled, the registry returns different responses based on the validation outcome:
+
+- **Successful validation** (`201 Created`): Returns both the complete DPP metadata and the validation report
+- **Failed validation** (`400 Bad Request`): Returns only the validation report
+
+
+#### Valid DPP (201 Created)
+```json
+{
+    "registryId": "3091ee93-0734-11f1-ae86-b79d61ccc308",
+    "createdAt": "2026-02-11 11:26:55",
+    "modifiedAt": null,
+    "metadata": {
+       "reoId": "LEI-529900T8BM49AURSDO55",
+       "facilitiesId": ["2343"],
+       "upi": "urn:epc:id:sgtin:0614141.107346.2017",
+       "liveURL": "http://localhost:9092/dpp-repository/v1/json/1",
+       "backupURL": "https://dpp.example.com/product/backup/12345",
+       "commodityCode": "85176200",
+       "granularityLevel": "ITEM",
+       "deactivated": false
+    },
+    "validation": {
+       "valid": true,
+       "message": "Validation performed using template found by SIMILARITY_MATCH",
+       "validatedWith": "vehicle_schema - 1.0.0",
+       "validationType": "PLAIN_JSON",
+       "invalidProperties": null
+    }
+}
+```
+
+#### Invalid DPP (400 Bad Request)
+```json
+{
+  "valid": false,
+  "message": "Validation performed using template found by SIMILARITY_MATCH",
+  "validatedWith": "vehicle_schema - 1.0.0",
+  "validationType": "PLAIN_JSON",
+  "invalidProperties": [
+    {
+      "property": "$.vehicleIdentification.vin.null",
+      "reason": "$.vehicleIdentification.vin: integer found, string expected"
+    },
+    {
+      "property": "$.vehicleIdentification.assembler.location",
+      "reason": "$.vehicleIdentification.assembler: required property 'location' not found"
+    },
+    {
+      "property": "$.vehicleCharacteristics.engineType",
+      "reason": "$.vehicleCharacteristics: required property 'engineType' not found"
+    }
+  ]
+}
+```
+
+The validation report includes:
+- **validatedWith**: Name and version of the schema used for validation
+- **validationType**: Type of validation performed
+- **invalidProperties**: List of validation errors (null if valid)
+
+For more details on the DPP validator, see the [DPP Validator documentation](https://github.com/CIRPASS-2/dpp-validator?tab=readme-ov-file#dpp-validator).
 
 ## Authentication & Authorization
 
