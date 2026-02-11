@@ -23,6 +23,10 @@ import java.util.Set;
  */
 public class SchemaValidationException extends RuntimeException {
 
+    public SchemaValidationException(String message) {
+        this(Set.of(ValidationMessage.builder().message(message).build()));
+    }
+
     public SchemaValidationException(Set<ValidationMessage> messages) {
         super(errorMessage(messages));
     }

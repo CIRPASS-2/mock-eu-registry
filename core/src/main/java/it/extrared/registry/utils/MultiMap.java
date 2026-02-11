@@ -40,4 +40,12 @@ public class MultiMap<K, V> extends HashMap<K, List<V>> {
         }
         get(key).add(value);
     }
+
+    public void addAt(K key, V value, int pos) {
+        if (!containsKey(key)) {
+            List<V> values = new ArrayList<>();
+            put(key, values);
+        }
+        get(key).set(pos, value);
+    }
 }

@@ -23,11 +23,15 @@ import org.jboss.logging.Logger;
 /** UUID related utils methods. */
 public class CommonUtils {
 
+    private static final Logger LOGGER = Logger.getLogger(CommonUtils.class);
     private static final TimeBasedGenerator TIME_GENERATOR = Generators.timeBasedGenerator();
 
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public static final String DATE_FORMAT = "yyyy-MM-dd";
+
+    public static final String INTEGER_REGEX = "^[+-]?\\d+$";
+    public static final String DOUBLE_REGEX = "^[+-]?(\\d+\\.?\\d*|\\.\\d+)([eE][+-]?\\d+)?$";
 
     /**
      * @return a time based UUID.
@@ -42,5 +46,21 @@ public class CommonUtils {
 
     public static void debug(Logger logger, Supplier<String> message, Throwable t) {
         if (logger.isDebugEnabled()) logger.debug(message.get(), t);
+    }
+
+    public static void warn(Logger logger, Supplier<String> message) {
+        if (logger.isEnabled(Logger.Level.WARN)) logger.warn(message.get());
+    }
+
+    public static boolean isInteger(String value) {
+        return value.matches(INTEGER_REGEX);
+    }
+
+    public static boolean isDouble(String value) {
+        return value.matches(DOUBLE_REGEX);
+    }
+
+    public static boolean is2xx(int statusCode) {
+        return String.valueOf(statusCode).startsWith("2");
     }
 }
