@@ -66,6 +66,19 @@ public interface MetadataRegistryConfig {
     String reoidFieldName();
 
     /**
+     * @return true if the reoid should be taken from the JWT claim. False otherwise.
+     */
+    @WithDefault("false")
+    Boolean reoidFromClaimEnabled();
+
+    /**
+     * @return the name of the claim of the JWT from which retrieve the reoId, if {@link
+     *     #reoidFromClaimEnabled()} is set to true.
+     */
+    @WithDefault("reoId")
+    String reoidClaimName();
+
+    /**
      * @return the field name of the live url in the JSON. Default is liveUrl.
      */
     @WithDefault("liveURL")
