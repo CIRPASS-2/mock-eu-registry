@@ -28,6 +28,7 @@ import it.extrared.registry.dpp.validation.DPPValidator;
 import it.extrared.registry.exceptions.SchemaValidationException;
 import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.update.DPPMetadataUpdater;
+import it.extrared.registry.security.UserAttributesAccessor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.LocalDateTime;
@@ -49,6 +50,8 @@ public class DPPMetadataService {
 
     @Inject SchemaCache schemaCache;
     @Inject DPPValidator dppValidator;
+
+    @Inject UserAttributesAccessor attributesAccessor;
 
     @Inject Pool pool;
 
@@ -82,6 +85,11 @@ public class DPPMetadataService {
 
     private Uni<DPPMetadataEntry> saveOrUpdateInternal(
             SqlConnection conn, JsonNode metadata, List<String> autocompleteBy) {
+        if (config.reoidFromClaimEnabled()) {
+            String reoId = attributesAccessor.getClaim(config.reoidClaimName());
+            ((ObjectNode) metadata)
+                    .set(config.reoidFieldName(), objectMapper.getNodeFactory().textNode(reoId));
+        }
         Uni<Void> autocompleted =
                 applyAutoComplete(
                         conn,
@@ -124,7 +132,9 @@ public class DPPMetadataService {
 
     private Uni<? extends DPPMetadataEntry> doSave(
             DPPMetadataEntry incoming, SqlConnection connection) {
-        incoming.setCreatedAt(LocalDateTime.now());
+        LocalDateTime createdAt = LocalDateTime.now();
+        incoming.setCreatedAt(createdAt);
+        incoming.setModifiedAt(createdAt);
         Uni<Void> validate = validate(incoming.getMetadata());
         Uni<DPPMetadataEntry> applyCallbacks = applyValidation(incoming);
         return validate.flatMap(v -> applyCallbacks).flatMap(m -> repository.save(connection, m));

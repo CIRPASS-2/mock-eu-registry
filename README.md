@@ -161,12 +161,12 @@ CREATE TABLE IF NOT EXISTS json_schemas (
 
 #### OpenID Connect Configuration
 
-| Variable                             | Environment Variable                 | Description                                         | Default |
-|--------------------------------------|--------------------------------------|-----------------------------------------------------|---------|
-| `quarkus.oidc.auth-server-url`       | `QUARKUS_OIDC_AUTH_SERVER_URL`       | OIDC server URL (realm URL for Keycloak)            | -       |
-| `quarkus.oidc.client-id`             | `QUARKUS_OIDC_CLIENT_ID`             | OIDC client ID                                      | -       |
-| `quarkus.oidc.credentials.secret`    | `QUARKUS_OIDC_CREDENTIALS_SECRET`    | OIDC client secret                                  | -       |
-| `registry-auth.oidc.role-claim-path` | `REGISTRY_AUTH_OIDC_ROLE_CLAIM_PATH` | Comma-separated JWT claim paths for role extraction | `group` |
+| Variable                              | Environment Variable                   | Description                               | Default   |
+|---------------------------------------|----------------------------------------|-------------------------------------------|-----------|
+| `quarkus.oidc.auth-server-url`        | `QUARKUS_OIDC_AUTH_SERVER_URL`         | OIDC server URL (realm URL for Keycloak)  | -         |
+| `quarkus.oidc.client-id`              | `QUARKUS_OIDC_CLIENT_ID`               | OIDC client ID                            | -         |
+| `quarkus.oidc.credentials.secret`     | `QUARKUS_OIDC_CREDENTIALS_SECRET`      | OIDC client secret                        | -         |
+| `quarkus.oidc.roles.role-claim-path`  | `QUARKUS_OIDC_ROLES_ROLE_CLAIM_PATH`   | Role claim path                           | `groups`  |
 
 #### Application Configuration
 
