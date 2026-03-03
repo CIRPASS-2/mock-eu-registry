@@ -170,14 +170,16 @@ CREATE TABLE IF NOT EXISTS json_schemas (
 
 #### Application Configuration
 
-| Variable                              | Environment Variable            | Description                                                           | Default |
-|---------------------------------------|---------------------------------|-----------------------------------------------------------------------|---------|
-| `registry.autocompletion-enabled-for` | `AUTOCOMPLETION_ENABLED_FOR`    | Comma-separated list of fields eligible for autocompletion            | -       |
-| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`      | Strategy for handling duplicate UPI: `MODIFY` or `APPEND_WITH_NEW_ID` | -       |
-| `registry.upi-field-name`             | `REGISTRY_UPI_FIELD_NAME`       | Custom name for the unique product identifier field in the schema     | `upi`   |
-| `registry.reoid-field-name`           | `REGISTRY_REOID_FIELD_NAME`     | Custom name for the responsible economic operator field in the schema | `reoId` |
-| `registry.role-mappings`              | `REGISTRY_ROLE_MAPPINGS`        | Comma-separated mappings between external and internal roles          | -       |
-| `registry.json-schema-location`       | `REGISTRY_JSON_SCHEMA_LOCATION` | Location of custom JSON schema (URL, file URI, or absolute path)      | -       |
+| Variable                              | Environment Variable                | Description                                                                                                                                             | Default |
+|---------------------------------------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `registry.autocompletion-enabled-for` | `AUTOCOMPLETION_ENABLED_FOR`        | Comma-separated list of fields eligible for autocompletion                                                                                              | -       |
+| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`          | Strategy for handling duplicate UPI: `MODIFY` or `APPEND_WITH_NEW_ID`                                                                                   | -       |
+| `registry.upi-field-name`             | `REGISTRY_UPI_FIELD_NAME`           | Custom name for the unique product identifier field in the schema                                                                                       | `upi`   |
+| `registry.reoid-field-name`           | `REGISTRY_REOID_FIELD_NAME`         | Custom name for the responsible economic operator field in the schema                                                                                   | `reoId` |
+| `registry.role-mappings`              | `REGISTRY_ROLE_MAPPINGS`            | Comma-separated mappings between external and internal roles                                                                                            | -       |
+| `registry.json-schema-location`       | `REGISTRY_JSON_SCHEMA_LOCATION`     | Location of custom JSON schema (URL, file URI, or absolute path)                                                                                        | -       |
+| `registry.reoid-from-claim-enabled`   | `REGISTRY_REOID_FROM_CLAIM_ENABLED` | True if the reoid value for incoming DPP metadata entry should be taken from a JWT claim. False if it should be takend from the metadata payload itself | false   |
+| `registry.reoid-claim-name`           | `REGISTRY_REOID_CLAIM_NAME`         | The name of the jwt claim from which retrieving the reo Id. It is active only if the reoid from claim option is enabled                                 | `reoId` |
 
 
 #### DPP validation configuration
