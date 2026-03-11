@@ -22,6 +22,7 @@ import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Class providing functionality to retrieve a DPP from the decentralized repository. */
@@ -37,7 +38,9 @@ public class DPPFetcher {
      * @return the response.
      */
     public Uni<HttpResponse<Buffer>> fetchDPP(String url) {
-        List<String> mimes = List.of("application/json", "application/ld+json");
+        List<String> mimes = new ArrayList<>();
+        mimes.add("application/json");
+        mimes.addAll(RDFTypes.getSupportedContentTypes());
         HttpRequest<Buffer> request = webClient.getAbs(url);
         request.headers().add("Accept", String.join(", ", mimes));
         return request.send();
