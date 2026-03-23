@@ -49,4 +49,11 @@ public class ExceptionsMapper {
                 Response.Status.BAD_REQUEST,
                 objectMapper.convertValue(e.getValidationReport(), JsonNode.class));
     }
+
+    @ServerExceptionMapper
+    public RestResponse<ErrorPayload> mapException(
+            it.extrared.registry.exceptions.ValidatorException e) {
+        return RestUtils.respWithBodyAndStatus(
+                Response.Status.INTERNAL_SERVER_ERROR, new ErrorPayload(e.getMessage()));
+    }
 }
