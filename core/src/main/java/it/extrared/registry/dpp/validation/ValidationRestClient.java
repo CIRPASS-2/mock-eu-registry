@@ -15,11 +15,15 @@
  */
 package it.extrared.registry.dpp.validation;
 
+import io.quarkus.rest.client.reactive.ClientExceptionMapper;
 import io.smallrye.mutiny.Uni;
+import it.extrared.registry.exceptions.ValidatorException;
 import it.extrared.registry.security.AuthorizationHeaderForward;
 import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
@@ -38,4 +42,26 @@ public interface ValidationRestClient {
      */
     @POST
     Uni<ValidationReport> validate(byte[] dpp, @HeaderParam("Content-Type") String contentType);
+
+    @ClientExceptionMapper
+    static RuntimeException toException(Response response) {
+        return switch (response.getStatus()) {
+            case 500 -> {
+                String message = "Validator replied with error.\n";
+                if (response.hasEntity()) {
+                    message = message.concat(response.readEntity(String.class));
+                }
+                yield new ValidatorException(message);
+            }
+            case 401 -> new ValidatorException("Unauthorized access to validation service.");
+            case 403 -> new ValidatorException("Forbidden access to validation service.");
+            case 404 ->
+                    new NotFoundException(
+                            "No matching validation resource found. The registry entry cannot be validated.");
+            case 400 -> new ValidatorException("Bad request from registry to validation service.");
+            default ->
+                    new ValidatorException(
+                            "Something wrong happened while invoking the validation service.");
+        };
+    }
 }
