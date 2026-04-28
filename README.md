@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS json_schemas (
 | Variable                              | Environment Variable                | Description                                                                                                                                             | Default |
 |---------------------------------------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | `registry.autocompletion-enabled-for` | `AUTOCOMPLETION_ENABLED_FOR`        | Comma-separated list of fields eligible for autocompletion                                                                                              | -       |
-| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`          | Strategy for handling duplicate UPI: `MODIFY` or `APPEND_WITH_NEW_ID`                                                                                   | -       |
+| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`          | Strategy for handling duplicate UPI: `MODIFY` or `APPEND_WITH_NEW_ID` or `NONE`                                                                         | -       |
 | `registry.upi-field-name`             | `REGISTRY_UPI_FIELD_NAME`           | Custom name for the unique product identifier field in the schema                                                                                       | `upi`   |
 | `registry.reoid-field-name`           | `REGISTRY_REOID_FIELD_NAME`         | Custom name for the responsible economic operator field in the schema                                                                                   | `reoId` |
 | `registry.role-mappings`              | `REGISTRY_ROLE_MAPPINGS`            | Comma-separated mappings between external and internal roles                                                                                            | -       |
@@ -202,6 +202,7 @@ debug(LOGGER,()->"received DPP with content type %s".formatted());
 **Update Strategy**
 - `MODIFY`: Overwrites existing metadata when the same UPI is submitted
 - `APPEND_WITH_NEW_ID`: Creates a new entry even if the UPI already exists
+- `NONE`: No update allowed. A BAD REQUEST response is returned if a metadata associated to the upi already exists
 
 **Role Mappings**
 - Maps external Identity Provider roles to internal application roles
@@ -601,7 +602,7 @@ header to negotiate the media type (either `JSON` or `YAML`). The endpoint will 
 the current JSON schema in use by the application.
 
 ### Metadata Endpoints
-#### POST /metadata/v1
+#### POST /metadata/v1/registerDPP
 
 Creates or updates a metadata entry in the registry.
 
@@ -610,6 +611,7 @@ Creates or updates a metadata entry in the registry.
 - If the UPI already exists: behavior depends on the configured [update strategy](#configuration-notes)
   - `MODIFY`: overwrites the existing entry
   - `APPEND_WITH_NEW_ID`: creates a new entry with a different registry ID
+  - `NONE`: update is not allowed.
 
 **Query Parameters:**
 
@@ -620,7 +622,7 @@ Creates or updates a metadata entry in the registry.
 **Example Request:**
 
 ```http
-POST /metadata/v1?autocompleteBy=reoId,commodityCode
+POST /metadata/v1/registerDPP?autocompleteBy=reoId,commodityCode
 Content-Type: application/json
 
 {

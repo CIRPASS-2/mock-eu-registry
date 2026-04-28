@@ -53,7 +53,7 @@ public class MockDPPMetadataRepository implements DPPMetadataRepository {
               "created_at":"2025/10/21 11:30:43",
               "metadata": {
                 "reoId":"6789",
-                "upi":"6789",
+                "upi":"54321",
                 "commodityCode": "911176200",
                 "dataCarrierTypes":["QR_CODE","DATA_MATRIX"]
               }
