@@ -27,8 +27,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.jboss.resteasy.reactive.RestQuery;
 import org.jboss.resteasy.reactive.RestResponse;
 
-@Path("/metadata/v1")
-public interface DPPMetadataResource {
+@Path("/metadata/v2")
+public interface DPPMetadataResourceV2 {
 
     @Operation(
             summary = "Add DPP metadata",
@@ -52,7 +52,8 @@ public interface DPPMetadataResource {
                     equal to the corresponding ones in the first found metadata with same reoId.
                     """,
             in = ParameterIn.QUERY)
+    @Path("/registerDPP")
     @POST
-    Uni<RestResponse<DPPMetadataEntry>> addDPPMetadata(
+    Uni<RestResponse<DPPMetadataEntry>> addDPPMetadataV2(
             @RestQuery List<String> autocompleteBy, JsonNode jsonNode);
 }

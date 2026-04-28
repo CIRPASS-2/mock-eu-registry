@@ -13,10 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package it.extrared.registry.metadata.update;
+package it.extrared.registry.metadata;
 
-public enum UpdateType {
-    MODIFY,
-    APPEND_WITH_NEW_ID,
-    NONE
+import io.quarkus.test.junit.QuarkusTestProfile;
+import it.extrared.registry.metadata.update.UpdateType;
+
+import java.util.Map;
+
+public class MetadataNoneUpdatePropertyProfile implements QuarkusTestProfile {
+    @Override
+    public Map<String, String> getConfigOverrides() {
+        return Map.of("registry.update-strategy", UpdateType.NONE.name());
+    }
 }

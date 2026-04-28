@@ -30,13 +30,25 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestResponse;
 
 @ApplicationScoped
-public class DPPMetadataResourceImpl implements DPPMetadataResource {
+public class DPPMetadataResourceImpl implements DPPMetadataResourceV2, DPPMetadataResource {
+
     @Inject DPPMetadataService service;
 
     private static final Logger LOGGER = Logger.getLogger(DPPMetadataResourceImpl.class);
 
     @Override
     public Uni<RestResponse<DPPMetadataEntry>> addDPPMetadata(
+            List<String> autocompleteBy, JsonNode jsonNode) {
+        return addDPPMetadataInternal(autocompleteBy, jsonNode);
+    }
+
+    @Override
+    public Uni<RestResponse<DPPMetadataEntry>> addDPPMetadataV2(
+            List<String> autocompleteBy, JsonNode jsonNode) {
+        return addDPPMetadataInternal(autocompleteBy, jsonNode);
+    }
+
+    private Uni<RestResponse<DPPMetadataEntry>> addDPPMetadataInternal(
             List<String> autocompleteBy, JsonNode jsonNode) {
         debug(
                 LOGGER,
