@@ -19,21 +19,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonObject;
+import it.extrared.registry.metadata.DPPMetadataEntry;
 import jakarta.enterprise.inject.spi.CDI;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import org.jboss.logging.Logger;
 
 /** Some useful method to handle JSON data. */
 public class JsonUtils {
-
-    public static final String CONTEXT = "@context";
-    public static final String GRAPH = "@graph";
-    public static final String TYPE = "@type";
-    public static final String VALUE = "@value";
-
-    private static final Logger LOGGER = Logger.getLogger(JsonUtils.class);
 
     public static Map<String, Object> toMap(JsonNode node) {
         return objectMapper().convertValue(node, new TypeReference<Map<String, Object>>() {});
@@ -60,5 +53,15 @@ public class JsonUtils {
                 JsonUtils.class.getResourceAsStream("/json-schema/%s".formatted(fileName))) {
             return objectMapper().readTree(is);
         }
+    }
+
+    public static String getJsonFieldAsString(DPPMetadataEntry metadata, String fielName) {
+        String upi = null;
+        JsonNode jMetadata = metadata.getMetadata();
+        if (jMetadata != null) {
+            JsonNode jsonNode = jMetadata.get(fielName);
+            if (jsonNode != null && !jsonNode.isNull()) upi = jsonNode.asText();
+        }
+        return upi;
     }
 }

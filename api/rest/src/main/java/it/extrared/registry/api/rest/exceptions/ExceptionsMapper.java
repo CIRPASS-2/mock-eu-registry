@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.extrared.registry.api.rest.RestUtils;
 import it.extrared.registry.exceptions.InvalidDPPException;
+import it.extrared.registry.exceptions.InvalidOperationException;
 import it.extrared.registry.exceptions.JsonSchemaException;
 import it.extrared.registry.exceptions.SchemaValidationException;
 import jakarta.enterprise.inject.spi.CDI;
@@ -48,6 +49,13 @@ public class ExceptionsMapper {
         return RestUtils.respWithBodyAndStatus(
                 Response.Status.BAD_REQUEST,
                 objectMapper.convertValue(e.getValidationReport(), JsonNode.class));
+    }
+
+    @ServerExceptionMapper
+    public RestResponse<ErrorPayload> mapException(InvalidOperationException e) {
+        return RestUtils.respWithBodyAndStatus(
+                Response.Status.BAD_REQUEST,
+                new ErrorPayload("The operation is not valid:\n %s".formatted(e.getMessage())));
     }
 
     @ServerExceptionMapper
