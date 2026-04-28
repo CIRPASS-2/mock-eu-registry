@@ -17,7 +17,6 @@ package it.extrared.registry.metadata;
 
 import io.quarkus.test.junit.QuarkusTestProfile;
 import it.extrared.registry.metadata.update.UpdateType;
-
 import java.util.Map;
 
 public class MetadataNoneUpdatePropertyProfile implements QuarkusTestProfile {

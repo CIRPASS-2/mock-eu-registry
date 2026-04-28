@@ -15,6 +15,8 @@
  */
 package it.extrared.registry.metadata;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,22 +24,15 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.vertx.RunOnVertxContext;
 import io.quarkus.test.vertx.UniAsserter;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import it.extrared.registry.TestSupport;
-import it.extrared.registry.exceptions.InvalidDPPException;
 import it.extrared.registry.exceptions.InvalidOperationException;
-import it.extrared.registry.exceptions.SchemaValidationException;
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @TestProfile(MetadataNoneUpdatePropertyProfile.class)
 public class DPPMetadataServiceNoneTest extends TestSupport {
-
 
     private static final String METADATA_UPDATE =
             """
@@ -52,7 +47,6 @@ public class DPPMetadataServiceNoneTest extends TestSupport {
     @Inject ObjectMapper om;
     @Inject DPPMetadataService metadataService;
 
-
     @Test
     @RunOnVertxContext
     public void testNoneUpdate(UniAsserter asserter) throws JsonProcessingException {
@@ -60,7 +54,7 @@ public class DPPMetadataServiceNoneTest extends TestSupport {
         asserter.assertFailedWith(
                 () -> metadataService.saveOrUpdate(upd, List.of("reoId")),
                 t -> {
-                    assertEquals(InvalidOperationException.class,t.getClass());
+                    assertEquals(InvalidOperationException.class, t.getClass());
                 });
     }
 }
