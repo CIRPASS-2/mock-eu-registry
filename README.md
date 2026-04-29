@@ -602,7 +602,7 @@ header to negotiate the media type (either `JSON` or `YAML`). The endpoint will 
 the current JSON schema in use by the application.
 
 ### Metadata Endpoints
-#### POST /metadata/v1/registerDPP
+#### POST /metadata/v1/registerDPP (or) /metadata/v1/
 
 Creates or updates a metadata entry in the registry.
 
@@ -623,6 +623,7 @@ Creates or updates a metadata entry in the registry.
 
 ```http
 POST /metadata/v1/registerDPP?autocompleteBy=reoId,commodityCode
+POST /metadata/v1?autocompleteBy=reoId,commodityCode
 Content-Type: application/json
 
 {
