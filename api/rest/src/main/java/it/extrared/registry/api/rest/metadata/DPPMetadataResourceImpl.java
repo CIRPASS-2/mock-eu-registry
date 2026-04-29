@@ -39,6 +39,17 @@ public class DPPMetadataResourceImpl implements DPPMetadataResource {
     @Override
     public Uni<RestResponse<DPPMetadataEntry>> addDPPMetadata(
             List<String> autocompleteBy, JsonNode jsonNode) {
+        return addDPPMetadataInternal(autocompleteBy, jsonNode);
+    }
+
+    @Override
+    public Uni<RestResponse<DPPMetadataEntry>> registerDPP(
+            List<String> autocompleteBy, JsonNode jsonNode) {
+        return addDPPMetadataInternal(autocompleteBy, jsonNode);
+    }
+
+    private Uni<RestResponse<DPPMetadataEntry>> addDPPMetadataInternal(
+            List<String> autocompleteBy, JsonNode jsonNode) {
         debug(
                 LOGGER,
                 () ->
