@@ -64,4 +64,11 @@ public class ExceptionsMapper {
         return RestUtils.respWithBodyAndStatus(
                 Response.Status.INTERNAL_SERVER_ERROR, new ErrorPayload(e.getMessage()));
     }
+
+    @ServerExceptionMapper
+    public RestResponse<ErrorPayload> mapException(
+            it.extrared.registry.api.rest.exceptions.JWSVerificationException e) {
+        return RestUtils.respWithBodyAndStatus(
+                Response.Status.UNAUTHORIZED, new ErrorPayload(e.getMessage()));
+    }
 }

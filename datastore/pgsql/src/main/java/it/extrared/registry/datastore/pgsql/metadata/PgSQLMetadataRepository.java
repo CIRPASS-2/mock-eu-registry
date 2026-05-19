@@ -27,7 +27,6 @@ import it.extrared.registry.jsonschema.Schema;
 import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.DPPMetadataEntry;
 import it.extrared.registry.metadata.DPPMetadataRepository;
-import it.extrared.registry.utils.CommonUtils;
 import it.extrared.registry.utils.JsonUtils;
 import it.extrared.registry.utils.SQLClientUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -138,7 +137,6 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
     @Override
     public Uni<DPPMetadataEntry> save(SqlConnection conn, DPPMetadataEntry metadata) {
         debug(LOG, () -> "Persisting a metadata entry %s".formatted(metadata));
-        metadata.setRegistryId(CommonUtils.generateTimeBasedUUID());
         Uni<RowSet<Row>> row =
                 conn.preparedQuery(INSERT)
                         .execute(

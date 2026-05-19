@@ -29,6 +29,7 @@ import it.extrared.registry.exceptions.SchemaValidationException;
 import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.update.DPPMetadataUpdater;
 import it.extrared.registry.security.UserAttributesAccessor;
+import it.extrared.registry.utils.CommonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.LocalDateTime;
@@ -137,7 +138,9 @@ public class DPPMetadataService {
         incoming.setModifiedAt(createdAt);
         Uni<Void> validate = validate(incoming.getMetadata());
         Uni<DPPMetadataEntry> applyCallbacks = applyValidation(incoming);
-        return validate.flatMap(v -> applyCallbacks).flatMap(m -> repository.save(connection, m));
+        return validate.flatMap(v -> applyCallbacks)
+                .invoke(m -> m.setRegistryId(CommonUtils.generateTimeBasedUUID()))
+                .flatMap(m -> repository.save(connection, m));
     }
 
     private Uni<Void> applyAutoComplete(

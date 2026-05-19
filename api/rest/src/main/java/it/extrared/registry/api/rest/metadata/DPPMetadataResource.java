@@ -15,11 +15,12 @@
  */
 package it.extrared.registry.api.rest.metadata;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 import it.extrared.registry.metadata.DPPMetadataEntry;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import java.util.List;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
@@ -54,7 +55,7 @@ public interface DPPMetadataResource {
             in = ParameterIn.QUERY)
     @POST
     Uni<RestResponse<DPPMetadataEntry>> addDPPMetadata(
-            @RestQuery List<String> autocompleteBy, JsonNode jsonNode);
+            @Context HttpHeaders headers, @RestQuery List<String> autocompleteBy, byte[] body);
 
     @Operation(
             summary = "Add DPP metadata",
@@ -81,5 +82,5 @@ public interface DPPMetadataResource {
     @Path("/registerDPP")
     @POST
     Uni<RestResponse<DPPMetadataEntry>> registerDPP(
-            @RestQuery List<String> autocompleteBy, JsonNode jsonNode);
+            @Context HttpHeaders headers, @RestQuery List<String> autocompleteBy, byte[] body);
 }

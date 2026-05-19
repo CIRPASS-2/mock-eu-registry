@@ -18,34 +18,54 @@ package it.extrared.registry.api.rest.metadata;
 import static it.extrared.registry.utils.CommonUtils.debug;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.unchecked.Unchecked;
+import it.extrared.registry.MetadataRegistryConfig;
 import it.extrared.registry.api.rest.RestUtils;
+import it.extrared.registry.api.rest.jws.JWSService;
 import it.extrared.registry.metadata.DPPMetadataEntry;
 import it.extrared.registry.metadata.DPPMetadataService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.RestQuery;
 import org.jboss.resteasy.reactive.RestResponse;
 
 @ApplicationScoped
 public class DPPMetadataResourceImpl implements DPPMetadataResource {
 
     @Inject DPPMetadataService service;
+    @Inject JWSService jwsService;
+    @Inject MetadataRegistryConfig config;
+
+    @Inject ObjectMapper objectMapper;
 
     private static final Logger LOGGER = Logger.getLogger(DPPMetadataResourceImpl.class);
 
     @Override
     public Uni<RestResponse<DPPMetadataEntry>> addDPPMetadata(
-            List<String> autocompleteBy, JsonNode jsonNode) {
-        return addDPPMetadataInternal(autocompleteBy, jsonNode);
+            @Context HttpHeaders headers, @RestQuery List<String> autocompleteBy, byte[] body) {
+        Uni<Void> jwsCheck = jwsService.verify(body, headers);
+        return jwsCheck.flatMap(
+                Unchecked.function(
+                        v -> addDPPMetadataInternal(autocompleteBy, objectMapper.readTree(body))));
     }
 
     @Override
     public Uni<RestResponse<DPPMetadataEntry>> registerDPP(
-            List<String> autocompleteBy, JsonNode jsonNode) {
-        return addDPPMetadataInternal(autocompleteBy, jsonNode);
+            @Context HttpHeaders headers, @RestQuery List<String> autocompleteBy, byte[] body) {
+        LOGGER.infof(
+                "Resource method body length: %d, first byte: %d, last byte: %d",
+                body.length, body[0], body[body.length - 1]);
+        Uni<Void> jwsCheck = jwsService.verify(body, headers);
+        return jwsCheck.flatMap(
+                Unchecked.function(
+                        v -> addDPPMetadataInternal(autocompleteBy, objectMapper.readTree(body))));
     }
 
     private Uni<RestResponse<DPPMetadataEntry>> addDPPMetadataInternal(

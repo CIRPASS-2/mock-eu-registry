@@ -105,6 +105,32 @@ public interface MetadataRegistryConfig {
      */
     Optional<String> jsonSchemaLocation();
 
+    /**
+     * @return jws configuration
+     */
+    Jws jws();
+
+    interface Jws {
+
+        /**
+         * @return true if detached jws is enabled, false otherwise.
+         */
+        @WithDefault("false")
+        boolean verificationEnabled();
+
+        /**
+         * @return the claim name where to find the jwks uri.
+         */
+        @WithDefault("jwksUri")
+        String jwksUriClaimName();
+
+        /**
+         * @return the http header name where to find the detached jws.
+         */
+        @WithDefault("x-jws-signature")
+        String headerName();
+    }
+
     class RolesMappingsConverter implements Converter<MultiMap<String, String>> {
 
         @Override
