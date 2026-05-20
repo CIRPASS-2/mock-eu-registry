@@ -1,0 +1,1 @@
+ALTER TABLE dpp_metadata ADD COLUMN dpp_hash VARCHAR(71);

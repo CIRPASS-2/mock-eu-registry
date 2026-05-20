@@ -1,0 +1,269 @@
+{
+  "product": {
+    "id": "PROD-2024-BATTERY-XZ789",
+    "name": "EcoBattery Ultra 5000mAh",
+    "description": "Batteria litio-ione ad alta capacità con materiali riciclati",
+    "gtin": "8712345678902",
+    "taric_code": "8506500000",
+    "energy_related": true,
+    "images": [
+      "https://example.com/products/battery-front.jpg",
+      "https://example.com/products/battery-side.jpg"
+    ],
+    "category": {
+      "classification_system": "UNSPSC",
+      "code": "26111701",
+      "description": "Lithium ion batteries"
+    },
+    "manufacturer": {
+      "company_name": "GreenPower Industries SpA",
+      "company_id": "IT12345678901",
+      "country": "IT",
+      "address": {
+        "street": "Via dell'Energia 42",
+        "city": "Milano",
+        "postal_code": "20121",
+        "country": "IT"
+      },
+      "contact": {
+        "email": "info@greenpower.it",
+        "phone": "+39 02 1234567"
+      }
+    },
+    "economic_operator": {
+      "type": "distributor",
+      "company_name": "EcoDistrib SRL",
+      "vat_number": "IT98765432109"
+    }
+  },
+
+  "passport_info": {
+    "passport_id": "DPP-EU-2024-BAT-001234",
+    "version": "2.1.0",
+    "status": "active",
+    "granularity": "batch",
+    "issued_date": "2024-03-15T10:30:00Z",
+    "valid_from": "2024-03-20T00:00:00Z",
+    "valid_until": "2034-03-20T00:00:00Z",
+    "last_modified": "2024-12-10T14:22:00Z",
+    "issuer": {
+      "organization": "TÜV Certification Body",
+      "id": "CERT-TUV-DE-001"
+    },
+    "facility_id": "FAC-IT-MI-GPI-001",
+    "backup_host": {
+      "provider": "EU DPP Backup Service",
+      "url": "https://backup.eu-dpp.eu/archive"
+    }
+  },
+
+  "specifications": {
+    "dimensions": {
+      "length_mm": 150.0,
+      "width_mm": 75.0,
+      "height_mm": 8.5,
+      "weight_g": 85.3,
+      "tolerance_percent": 2.0
+    },
+
+    "technical": {
+      "capacity_mah": 5000,
+      "voltage_v": 3.7,
+      "charging_cycles": 1000,
+      "operating_temp_min_c": -10,
+      "operating_temp_max_c": 45
+    },
+
+    "durability": {
+      "expected_lifetime_hours": 8760,
+      "mtbf_hours": 50000,
+      "warranty_months": 24
+    }
+  },
+
+  "environmental_impact": {
+    "carbon_footprint": {
+      "total_kg_co2": 12.4,
+      "methodology": "ISO 14067:2018",
+      "calculation_date": "2024-02-20"
+    },
+
+    "energy_consumption": {
+      "manufacturing_kwh": 35.6,
+      "use_phase_estimated_kwh": 2.5
+    },
+
+    "water_consumption": {
+      "total_liters": 145.8,
+      "phase": "manufacturing"
+    },
+
+    "emissions": {
+      "air": {
+        "co2_kg": 11.2,
+        "nox_g": 45.3
+      }
+    },
+
+    "waste_generation": {
+      "total_kg": 2.3,
+      "hazardous_kg": 0.8,
+      "packaging_kg": 0.15
+    }
+  },
+
+  "circularity": {
+    "recycled_content_percent": 35.0,
+    "recyclability_percent": 85.0,
+    "renewable_materials_percent": 12.0,
+
+    "recycling_info": {
+      "collection_rate_percent": 78.0,
+      "recovery_rate_percent": 82.0
+    }
+  },
+
+  "materials": {
+    "bill_of_materials": [
+      {
+        "material_name": "Lithium",
+        "cas_number": "7439-93-2",
+        "weight_g": 8.5,
+        "percentage": 10.0,
+        "recycled": true
+      },
+      {
+        "material_name": "Cobalt",
+        "cas_number": "7440-48-4",
+        "weight_g": 12.1,
+        "percentage": 14.2,
+        "recycled": false
+      },
+      {
+        "material_name": "Graphite",
+        "cas_number": "7782-42-5",
+        "weight_g": 20.3,
+        "percentage": 23.8,
+        "recycled": true
+      }
+    ],
+
+    "substances_of_concern": [
+      {
+        "substance_name": "Cobalt compounds",
+        "cas_number": "7440-48-4",
+        "concentration_percent": 14.2,
+        "threshold_percent": 0.1,
+        "regulation": "REACH SVHC",
+        "exceeds_threshold": true
+      }
+    ]
+  },
+
+  "packaging": {
+    "type": "Recyclable paper box",
+    "material": "FSC certified cardboard",
+    "weight_g": 45.0,
+    "recyclable": true,
+    "packaging_date": "2024-11-28T08:15:00Z",
+    "product_to_packaging_ratio": 1.89
+  },
+
+  "components": [
+    {
+      "component_id": "COMP-CELL-001",
+      "name": "Lithium Cell Module",
+      "type": "battery_cell",
+      "quantity": 1,
+      "manufacturer": "Cell Supplier Ltd",
+      "has_own_dpp": true,
+      "dpp_url": "https://example.com/dpp/cell-module-001"
+    },
+    {
+      "component_id": "COMP-BMS-002",
+      "name": "Battery Management System",
+      "type": "electronic_component",
+      "quantity": 1,
+      "manufacturer": "Electronics Corp"
+    }
+  ],
+
+  "spare_parts": [
+    {
+      "part_id": "SPARE-CONN-001",
+      "name": "Battery Connector",
+      "availability": "available",
+      "supplier": "Parts Supplier SRL",
+      "price_eur": 5.50
+    }
+  ],
+
+  "documentation": {
+    "user_manual": {
+      "language": "it",
+      "format": "pdf",
+      "url": "https://example.com/docs/battery-manual-it.pdf",
+      "version": "1.2"
+    },
+
+    "safety_data_sheet": {
+      "format": "pdf",
+      "url": "https://example.com/docs/battery-sds.pdf",
+      "revision_date": "2024-01-10"
+    },
+
+    "disposal_instructions": {
+      "languages": ["it", "en", "de"],
+      "url": "https://example.com/docs/disposal-battery.pdf"
+    },
+
+    "certificates": [
+      {
+        "type": "CE marking",
+        "certificate_number": "CE-2024-BAT-12345",
+        "issuer": "Notified Body 0123",
+        "valid_until": "2029-03-15"
+      },
+      {
+        "type": "UN38.3 Transport",
+        "certificate_number": "UN-2023-GPI-789",
+        "issuer": "Transport Safety Lab"
+      }
+    ]
+  },
+
+  "supply_chain": {
+    "manufacturing_location": {
+      "facility_name": "GreenPower Plant 1",
+      "address": "Via dell'Energia 42, Milano",
+      "country": "IT",
+      "coordinates": {
+        "latitude": 45.4642,
+        "longitude": 9.1900
+      }
+    },
+
+    "manufacturing_date": "2024-11-25",
+    "batch_number": "BATCH-2024-11-025",
+
+    "traceability": {
+      "raw_materials_origin": [
+        {
+          "material": "Lithium",
+          "source_country": "CL",
+          "mine_certification": "Responsible Mining Initiative"
+        },
+        {
+          "material": "Cobalt",
+          "source_country": "CD",
+          "mine_certification": "RMI Conformant"
+        }
+      ]
+    }
+  },
+
+  "previous_versions": {
+    "has_previous_dpp": false,
+    "previous_dpp_id": null
+  }
+}

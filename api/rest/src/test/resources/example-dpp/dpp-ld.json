@@ -1,0 +1,124 @@
+{
+  "@context": {
+    "@vocab": "http://dpp.taltech.ee/EUDPP#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "si": "https://si-digital-framework.org/SI#",
+    "modelName": "productName"
+  },
+  "@graph": [
+    {
+      "@id": "http://example.com/product/smartphone-001",
+      "@type": "Product",
+      "uniqueProductID": "urn:epc:id:sgtin:0614141.112345.001",
+      "modelName": "EcoPhone X Pro",
+      "description": "Smartphone di fascia alta con materiali riciclati al 75%",
+      "GTIN": "8712345678901",
+      "commodityCode": "8517120000",
+      "isEnergyRelated": true,
+      "productImage": "https://example.com/images/smartphone-001.jpg",
+      "hasProductGroup": {
+        "@id": "http://example.com/classification/smartphones",
+        "@type": "ClassificationCode",
+        "codeSet": "https://ec.europa.eu/growth/tools-databases/tbt/",
+        "codeValue": "ELEC-PHONE-SMART"
+      },
+      "hasManufacturer": "http://example.com/actor/manufacturer-alpha",
+      "hasEconomicOperator": "http://example.com/actor/operator-beta",
+      "hasDPP": {
+        "@id": "http://example.com/dpp/smartphone-001-dpp",
+        "@type": "DPP",
+        "uniqueDPPID": "urn:uuid:a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+        "granularity": "product",
+        "status": "Active",
+        "schemaVersion": "1.7.0",
+        "validFrom": {
+          "@type": "xsd:dateTimeStamp",
+          "@value": "2024-01-15T08:00:00Z"
+        },
+        "validUntil": {
+          "@type": "xsd:dateTimeStamp",
+          "@value": "2034-01-15T08:00:00Z"
+        },
+        "lastUpdate": {
+          "@type": "xsd:dateTimeStamp",
+          "@value": "2024-11-20T14:30:00Z"
+        },
+        "facilityID": "FAC-IT-MI-001",
+        "hasIssuer": "http://example.com/actor/issuer-gamma"
+      },
+      "hasProperty": [
+        {
+          "@id": "http://example.com/property/weight-001",
+          "@type": "Weight",
+          "dictionaryReference": "https://example.com/dict/weight",
+          "numericalValue": {
+            "@type": "xsd:decimal",
+            "@value": "189.5"
+          },
+          "tolerance": 2.0,
+          "hasMeasurementUnit": {
+            "@id": "si:gram"
+          }
+        },
+        {
+          "@id": "http://example.com/property/carbon-footprint-001",
+          "@type": "CarbonFootprint",
+          "dictionaryReference": "https://example.com/dict/carbon-footprint",
+          "numericalValue": {
+            "@type": "xsd:decimal",
+            "@value": "45.8"
+          },
+          "hasMeasurementUnit": {
+            "@id": "si:kilogram-co2-equivalent"
+          }
+        },
+        {
+          "@id": "http://example.com/property/recycling-rate-001",
+          "@type": "RecyclingRate",
+          "dictionaryReference": "https://example.com/dict/recycling-rate",
+          "numericalValue": {
+            "@type": "xsd:decimal",
+            "@value": "75.0"
+          },
+          "hasMeasurementUnit": {
+            "@id": "si:percent"
+          }
+        },
+        {
+          "@id": "http://example.com/property/energy-consumption-001",
+          "@type": "EnergyConsumption",
+          "dictionaryReference": "https://example.com/dict/energy-consumption",
+          "numericalValue": {
+            "@type": "xsd:decimal",
+            "@value": "12.5"
+          },
+          "hasMeasurementUnit": {
+            "@id": "si:kilowatt-hour"
+          }
+        },
+        {
+          "@id": "http://example.com/property/durability-001",
+          "@type": "Durability",
+          "dictionaryReference": "https://example.com/dict/durability",
+          "numericalValue": {
+            "@type": "xsd:decimal",
+            "@value": "8760"
+          },
+          "hasMeasurementUnit": {
+            "@id": "si:hour"
+          }
+        }
+      ],
+      "hasPackagingDetail": {
+        "@id": "http://example.com/packaging/smartphone-001",
+        "@type": "PackagingDetail",
+        "packagingType": "Recyclable cardboard box",
+        "packagingDate": {
+          "@type": "xsd:dateTime",
+          "@value": "2024-11-15T10:30:00Z"
+        }
+      },
+      "containsSubstanceOfConcern": "http://example.com/soc/lithium-battery"
+    }
+  ]
+}

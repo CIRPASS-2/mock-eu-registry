@@ -17,6 +17,7 @@ package it.extrared.registry.utils;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.TimeBasedGenerator;
+import java.security.MessageDigest;
 import java.util.function.Supplier;
 import org.jboss.logging.Logger;
 
@@ -62,5 +63,20 @@ public class CommonUtils {
 
     public static boolean is2xx(int statusCode) {
         return String.valueOf(statusCode).startsWith("2");
+    }
+
+    public static String sha256(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(data);
+            // converti in hex string
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) {
+                hex.append(String.format("%02x", b));
+            }
+            return "sha256:" + hex;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

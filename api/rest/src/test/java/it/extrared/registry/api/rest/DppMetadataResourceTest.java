@@ -26,7 +26,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-public class DppMetadataResourceTest {
+public class DppMetadataResourceTest extends TestSupport {
 
     private static final String METADATA_1 =
             """
@@ -34,7 +34,8 @@ public class DppMetadataResourceTest {
                 "reoId":"12345",
                 "upi":"12345",
                 "commodityCode":"122267310",
-                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"]
+                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"],
+                "liveURL":"http://localhost:1111/dpp"
               }
             """;
 
@@ -53,7 +54,8 @@ public class DppMetadataResourceTest {
                 "reoId":"912345",
                 "upi":"123456",
                 "commodityCode":"122267310",
-                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"]
+                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"],
+                "liveURL":"http://localhost:1111/dpp"
               }
             """;
 
@@ -61,7 +63,8 @@ public class DppMetadataResourceTest {
             """
             {
                 "reoId":"912345",
-                "upi":"99999"
+                "upi":"99999",
+                "liveURL":"http://localhost:1111/dpp"
               }
             """;
 

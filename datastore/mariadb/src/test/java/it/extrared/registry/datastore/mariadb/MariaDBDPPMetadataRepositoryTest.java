@@ -54,6 +54,7 @@ public class MariaDBDPPMetadataRepositoryTest {
                 """;
         DPPMetadataEntry metadataEntry = new DPPMetadataEntry(om.readTree(json));
         metadataEntry.setRegistryId(CommonUtils.generateTimeBasedUUID());
+        metadataEntry.setDppHash(CommonUtils.sha256("{}".getBytes()));
         asserter.assertNotNull(
                 () ->
                         pool.withTransaction(c -> repository.save(c, metadataEntry))
@@ -107,6 +108,7 @@ public class MariaDBDPPMetadataRepositoryTest {
 
         DPPMetadataEntry metadataEntry = new DPPMetadataEntry(om.readTree(json));
         metadataEntry.setRegistryId(CommonUtils.generateTimeBasedUUID());
+        metadataEntry.setDppHash(CommonUtils.sha256("{}".getBytes()));
         asserter.assertNotNull(
                 () ->
                         pool.withTransaction(c -> repository.save(c, metadataEntry))

@@ -34,7 +34,7 @@ import org.mockito.Mockito;
 
 @QuarkusTest
 @ConnectWireMock
-public class DppMetadataResourceJWSTest {
+public class DppMetadataResourceJWSTest extends TestSupport {
 
     private static KeyPair testKeyPair;
     private static final String KEY_ID = "test-key-1";
@@ -64,8 +64,9 @@ public class DppMetadataResourceJWSTest {
                 "reoId":"123wdf433sd",
                 "upi":"1re335",
                 "commodityCode":"122267310",
-                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"]
-              }
+                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"],
+                "liveURL":"http://localhost:2222/dpp"
+            }
             """;
 
     @BeforeAll

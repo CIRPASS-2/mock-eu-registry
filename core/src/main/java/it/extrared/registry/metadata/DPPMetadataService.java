@@ -15,15 +15,21 @@
  */
 package it.extrared.registry.metadata;
 
+import static io.quarkus.arc.impl.UncaughtExceptions.LOGGER;
+import static it.extrared.registry.utils.CommonUtils.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.ValidationMessage;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.sqlclient.Pool;
 import io.vertx.mutiny.sqlclient.SqlConnection;
 import it.extrared.registry.MetadataRegistryConfig;
+import it.extrared.registry.dpp.DPPFetcher;
 import it.extrared.registry.dpp.validation.DPPValidator;
 import it.extrared.registry.exceptions.SchemaValidationException;
 import it.extrared.registry.jsonschema.SchemaCache;
@@ -53,6 +59,8 @@ public class DPPMetadataService {
     @Inject DPPValidator dppValidator;
 
     @Inject UserAttributesAccessor attributesAccessor;
+
+    @Inject DPPFetcher dppFetcher;
 
     @Inject Pool pool;
 
@@ -109,9 +117,10 @@ public class DPPMetadataService {
                         });
     }
 
-    private Uni<DPPMetadataEntry> applyValidation(DPPMetadataEntry entry) {
+    private Uni<DPPMetadataEntry> applyDPPValidation(
+            DPPMetadataEntry entry, DppWithCType dppWithCType) {
         if (config.dppValidationEnabled()) {
-            return dppValidator.validate(entry);
+            return dppValidator.validate(entry, dppWithCType);
         } else {
             return Uni.createFrom().item(entry);
         }
@@ -125,10 +134,8 @@ public class DPPMetadataService {
                         .merge(
                                 (ObjectNode) modified.getMetadata(),
                                 (ObjectNode) modifier.getMetadata()));
-        Uni<Void> validate = validate(modified.getMetadata());
-        Uni<DPPMetadataEntry> dppValidation = applyValidation(modified);
-        return validate.flatMap(v -> dppValidation)
-                .flatMap(me -> updater.applyUpdate(config.updateStrategy(), conn, me));
+        Uni<DPPMetadataEntry> validated = generateHashAndApplyValidations(modified);
+        return validated.flatMap(me -> updater.applyUpdate(config.updateStrategy(), conn, me));
     }
 
     private Uni<? extends DPPMetadataEntry> doSave(
@@ -136,9 +143,8 @@ public class DPPMetadataService {
         LocalDateTime createdAt = LocalDateTime.now();
         incoming.setCreatedAt(createdAt);
         incoming.setModifiedAt(createdAt);
-        Uni<Void> validate = validate(incoming.getMetadata());
-        Uni<DPPMetadataEntry> applyCallbacks = applyValidation(incoming);
-        return validate.flatMap(v -> applyCallbacks)
+        Uni<DPPMetadataEntry> validated = generateHashAndApplyValidations(incoming);
+        return validated
                 .invoke(m -> m.setRegistryId(CommonUtils.generateTimeBasedUUID()))
                 .flatMap(m -> repository.save(connection, m));
     }
@@ -176,7 +182,14 @@ public class DPPMetadataService {
         }
     }
 
-    private Uni<Void> validate(JsonNode metadata) {
+    private Uni<DPPMetadataEntry> generateHashAndApplyValidations(DPPMetadataEntry entry) {
+        Uni<Void> validated = validateMetadata(entry.getMetadata());
+        Uni<DppWithCType> dpp = validated.flatMap(v -> getDpp(entry));
+        dpp = dpp.invoke(dppC -> entry.setDppHash(sha256(dppC.body())));
+        return dpp.flatMap(dppC -> applyDPPValidation(entry, dppC));
+    }
+
+    private Uni<Void> validateMetadata(JsonNode metadata) {
         return schemaCache
                 .get()
                 .invoke(
@@ -185,5 +198,32 @@ public class DPPMetadataService {
                             if (!msgs.isEmpty()) throw new SchemaValidationException(msgs);
                         })
                 .replaceWithVoid();
+    }
+
+    private Uni<DppWithCType> getDpp(DPPMetadataEntry entry) {
+        return dppFetcher.fetchDPP(getUrl(entry)).map(this::toDto);
+    }
+
+    private DppWithCType toDto(HttpResponse<Buffer> response) {
+        if (is2xx(response.statusCode())) {
+            String cType = response.getHeader("Content-Type");
+            byte[] body = response.bodyAsBuffer().getBytes();
+            return new DppWithCType(body, cType);
+        } else {
+            throw new RuntimeException(
+                    "Error while retrieving DPP from liveURL. Response Http Status code is %s"
+                            .formatted(response.statusCode()));
+        }
+    }
+
+    private String getUrl(DPPMetadataEntry entry) {
+        debug(
+                LOGGER,
+                () ->
+                        "Trying retrieving the live URL using field name %s"
+                                .formatted(config.liveUrlFieldName()));
+        if (entry.getMetadata() != null && entry.getMetadata().has(config.liveUrlFieldName()))
+            return entry.getMetadata().get(config.liveUrlFieldName()).asText();
+        return null;
     }
 }

@@ -33,6 +33,8 @@ public class DPPMetadataEntry {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_TIME_FORMAT)
     private LocalDateTime modifiedAt;
 
+    private String dppHash;
+
     private JsonNode metadata;
 
     public DPPMetadataEntry(JsonNode metadata) {
@@ -73,6 +75,14 @@ public class DPPMetadataEntry {
         this.metadata = metadata;
     }
 
+    public String getDppHash() {
+        return dppHash;
+    }
+
+    public void setDppHash(String dppHash) {
+        this.dppHash = dppHash;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (object == null || getClass() != object.getClass()) return false;
@@ -80,12 +90,13 @@ public class DPPMetadataEntry {
         return Objects.equals(registryId, that.registryId)
                 && Objects.equals(createdAt, that.createdAt)
                 && Objects.equals(modifiedAt, that.modifiedAt)
+                && Objects.equals(dppHash, that.dppHash)
                 && Objects.equals(metadata, that.metadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(registryId, createdAt, modifiedAt, metadata);
+        return Objects.hash(registryId, createdAt, modifiedAt, dppHash, metadata);
     }
 
     @Override
@@ -98,6 +109,8 @@ public class DPPMetadataEntry {
                 + createdAt
                 + ", modifiedAt="
                 + modifiedAt
+                + ", dppHash="
+                + dppHash
                 + ", metadata="
                 + metadata
                 + '}';
