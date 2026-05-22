@@ -35,6 +35,8 @@ public class DPPMetadataEntry {
 
     private String dppHash;
 
+    private String contentType;
+
     private JsonNode metadata;
 
     public DPPMetadataEntry(JsonNode metadata) {
@@ -81,6 +83,14 @@ public class DPPMetadataEntry {
 
     public void setDppHash(String dppHash) {
         this.dppHash = dppHash;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package it.extrared.registry.security;
 
+import it.extrared.registry.MetadataRegistryConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -9,6 +10,20 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 public class UserAttributesAccessor {
 
     @Inject JsonWebToken identity;
+
+    @Inject MetadataRegistryConfig registryConfig;
+
+    public String getReoId() {
+        return identity.getClaim(registryConfig.reoidClaimName());
+    }
+
+    public String getReoName() {
+        return identity.getClaim(registryConfig.reoNameClaimName());
+    }
+
+    public String getJwksUri() {
+        return identity.getClaim(registryConfig.jws().jwksUriClaimName());
+    }
 
     /**
      * Retrieve a claim value from the current jwt.

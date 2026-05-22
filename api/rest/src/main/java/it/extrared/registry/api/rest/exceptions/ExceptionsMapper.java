@@ -71,4 +71,11 @@ public class ExceptionsMapper {
         return RestUtils.respWithBodyAndStatus(
                 Response.Status.UNAUTHORIZED, new ErrorPayload(e.getMessage()));
     }
+
+    @ServerExceptionMapper
+    public RestResponse<ErrorPayload> mapException(
+            it.extrared.registry.api.rest.exceptions.NotFoundException e) {
+        return RestUtils.respWithBodyAndStatus(
+                Response.Status.NOT_FOUND, new ErrorPayload(e.getMessage()));
+    }
 }

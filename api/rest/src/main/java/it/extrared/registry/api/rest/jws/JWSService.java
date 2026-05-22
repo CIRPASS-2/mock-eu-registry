@@ -36,7 +36,7 @@ public class JWSService {
                                         new InvalidOperationException(
                                                 "Missing %s header"
                                                         .formatted(config.jws().headerName())));
-        String jwksUri = userAttributesAccessor.getClaim(config.jws().jwksUriClaimName());
+        String jwksUri = userAttributesAccessor.getJwksUri();
         debug(
                 LOGGER,
                 () ->

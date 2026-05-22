@@ -17,14 +17,18 @@ package it.extrared.registry.api.rest.metadata;
 
 import io.smallrye.mutiny.Uni;
 import it.extrared.registry.metadata.DPPMetadataEntry;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import java.util.List;
+import java.util.Optional;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 import org.jboss.resteasy.reactive.RestResponse;
 
@@ -83,4 +87,10 @@ public interface DPPMetadataResource {
     @POST
     Uni<RestResponse<DPPMetadataEntry>> registerDPP(
             @Context HttpHeaders headers, @RestQuery List<String> autocompleteBy, byte[] body);
+
+    @Path("/{registryId}/proof")
+    @GET
+    @Produces("application/jwt")
+    Uni<RestResponse<String>> getProofOrRegistration(
+            @RestPath String registryId, @RestQuery Optional<String> reoId);
 }

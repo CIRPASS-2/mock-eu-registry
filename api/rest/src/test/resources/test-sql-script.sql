@@ -7,7 +7,8 @@ registry_id VARCHAR(36) NOT NULL,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 metadata JSONB NOT NULL,
-dpp_hash VARCHAR(71)
+dpp_hash VARCHAR(71),
+dpp_content_type VARCHAR(50)
 );
 
 CREATE SEQUENCE IF NOT EXISTS json_schema_seq;

@@ -31,6 +31,9 @@ import java.util.function.Function;
  */
 public interface DPPMetadataRepository {
 
+    Uni<DPPMetadataEntry> findByRegistryIdAndReoId(
+            SqlConnection conn, String registryId, String reoId);
+
     Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi);
 
     Uni<DPPMetadataEntry> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters);

@@ -1,1 +1,1 @@
-ALTER TABLE dpp_metadata ADD COLUMN dpp_hash VARCHAR(71);
+ALTER TABLE dpp_metadata ADD COLUMN dpp_hash VARCHAR(71), ADD COLUMN dpp_content_type VARCHAR(50);

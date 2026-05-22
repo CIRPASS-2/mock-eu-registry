@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS dpp_metadata (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     metadata JSON NOT NULL,
-    dpp_hash VARCHAR(71)
+    dpp_hash VARCHAR(71),
+    dpp_content_type VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS json_schemas (

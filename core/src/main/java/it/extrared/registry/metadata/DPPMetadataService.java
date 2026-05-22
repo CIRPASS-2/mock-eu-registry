@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.ValidationMessage;
+import io.smallrye.jwt.build.Jwt;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
 import io.vertx.mutiny.core.buffer.Buffer;
@@ -38,10 +39,12 @@ import it.extrared.registry.security.UserAttributesAccessor;
 import it.extrared.registry.utils.CommonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /** Service class handling create and update operations over DPP metadata. */
 @ApplicationScoped
@@ -56,6 +59,7 @@ public class DPPMetadataService {
     @Inject DPPMetadataUpdater updater;
 
     @Inject SchemaCache schemaCache;
+
     @Inject DPPValidator dppValidator;
 
     @Inject UserAttributesAccessor attributesAccessor;
@@ -63,6 +67,54 @@ public class DPPMetadataService {
     @Inject DPPFetcher dppFetcher;
 
     @Inject Pool pool;
+
+    public Uni<String> getProofOfRegistration(String registryId, String reoId) {
+        return getByRegistryIdAndReoId(registryId, reoId).map(this::asJWT);
+    }
+
+    private String asJWT(DPPMetadataEntry entry) {
+        Function<String, String> getFieldName =
+                (k) -> {
+                    JsonNode node = entry.getMetadata().get(k);
+                    if (node != null && !node.isNull() && node.isTextual()) return node.asText();
+                    return null;
+                };
+
+        return Jwt.claims()
+                .claim("registryId", entry.getRegistryId())
+                .claim("registeredAt", entry.getCreatedAt().toString())
+                .claim("commodityCode", getFieldName.apply(config.commodityCodeFieldName()))
+                .claim(
+                        "reoId",
+                        config.reoidFromClaimEnabled()
+                                ? attributesAccessor.getReoId()
+                                : getFieldName.apply(config.reoidFieldName()))
+                .claim("reoName", attributesAccessor.getReoName())
+                .claim("dppHash", entry.getDppHash())
+                .claim("dppContentType", entry.getContentType())
+                .issuer(config.proofIssuer())
+                .jws()
+                .keyId(config.keyId())
+                .sign();
+    }
+
+    public Uni<DPPMetadataEntry> getByRegistryIdAndReoId(String registryId, String reoId) {
+        Uni<DPPMetadataEntry> result =
+                pool.withConnection(
+                        c ->
+                                repository.findByRegistryIdAndReoId(
+                                        c,
+                                        registryId,
+                                        config.reoidFromClaimEnabled()
+                                                ? attributesAccessor.getReoId()
+                                                : reoId));
+        return result.invoke(
+                m -> {
+                    if (m == null)
+                        throw new NotFoundException(
+                                "No registration found for registryId %s".formatted(registryId));
+                });
+    }
 
     /**
      * Save or update a metadata entry by executing the autocompletion if provided. The way in which
@@ -95,7 +147,7 @@ public class DPPMetadataService {
     private Uni<DPPMetadataEntry> saveOrUpdateInternal(
             SqlConnection conn, JsonNode metadata, List<String> autocompleteBy) {
         if (config.reoidFromClaimEnabled()) {
-            String reoId = attributesAccessor.getClaim(config.reoidClaimName());
+            String reoId = attributesAccessor.getReoId();
             ((ObjectNode) metadata)
                     .set(config.reoidFieldName(), objectMapper.getNodeFactory().textNode(reoId));
         }
@@ -185,7 +237,12 @@ public class DPPMetadataService {
     private Uni<DPPMetadataEntry> generateHashAndApplyValidations(DPPMetadataEntry entry) {
         Uni<Void> validated = validateMetadata(entry.getMetadata());
         Uni<DppWithCType> dpp = validated.flatMap(v -> getDpp(entry));
-        dpp = dpp.invoke(dppC -> entry.setDppHash(sha256(dppC.body())));
+        dpp =
+                dpp.invoke(
+                        dppC -> {
+                            entry.setDppHash(sha256(dppC.body()));
+                            entry.setContentType(dppC.contentType());
+                        });
         return dpp.flatMap(dppC -> applyDPPValidation(entry, dppC));
     }
 

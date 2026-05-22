@@ -99,7 +99,7 @@ public class DppMetadataResourceJWSTest extends TestSupport {
                                         .withHeader("Content-Type", "application/json")
                                         .withBody(buildJwks(testKeyPair.getPublic()))));
         String jwksUri = "http://localhost:" + wireMockPort + JWKS_PATH;
-        when(attributesAccessor.getClaim("jwksUri")).thenReturn(jwksUri);
+        when(attributesAccessor.getJwksUri()).thenReturn(jwksUri);
     }
 
     private String buildJwks(PublicKey publicKey) throws Exception {

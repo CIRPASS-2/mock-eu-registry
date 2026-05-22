@@ -32,6 +32,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestQuery;
 import org.jboss.resteasy.reactive.RestResponse;
@@ -41,7 +42,6 @@ public class DPPMetadataResourceImpl implements DPPMetadataResource {
 
     @Inject DPPMetadataService service;
     @Inject JWSService jwsService;
-    @Inject MetadataRegistryConfig config;
 
     @Inject ObjectMapper objectMapper;
 
@@ -66,6 +66,12 @@ public class DPPMetadataResourceImpl implements DPPMetadataResource {
         return jwsCheck.flatMap(
                 Unchecked.function(
                         v -> addDPPMetadataInternal(autocompleteBy, objectMapper.readTree(body))));
+    }
+
+    @Override
+    public Uni<RestResponse<String>> getProofOrRegistration(
+            String registryId, Optional<String> reoId) {
+        return service.getProofOfRegistration(registryId, reoId.orElse(null)).map(RestResponse::ok);
     }
 
     private Uni<RestResponse<DPPMetadataEntry>> addDPPMetadataInternal(
