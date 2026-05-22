@@ -163,9 +163,11 @@ public class DppMetadataResourceTest extends TestSupport {
                         .contentType("application/jwt")
                         .extract()
                         .body()
-                        .as(String.class);
-        System.out.println(proof);
+                        .asString();
         JwtClaims claims = parseAndVerifyJwt(proof);
+        assertNotNull(claims.getClaimValue("dppHash"));
+        assertNotNull(claims.getClaimValue("registryId"));
+        assertNotNull(claims.getClaimValue("reoId"));
     }
 
     private JwtClaims parseAndVerifyJwt(String jwt) throws Exception {

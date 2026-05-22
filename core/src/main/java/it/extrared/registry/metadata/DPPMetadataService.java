@@ -263,7 +263,7 @@ public class DPPMetadataService {
 
     private DppWithCType toDto(HttpResponse<Buffer> response) {
         if (is2xx(response.statusCode())) {
-            String cType = response.getHeader("Content-Type");
+            String cType = response.headers().get("Content-Type");
             byte[] body = response.bodyAsBuffer().getBytes();
             return new DppWithCType(body, cType);
         } else {
