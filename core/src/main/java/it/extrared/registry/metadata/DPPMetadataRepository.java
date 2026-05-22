@@ -51,6 +51,7 @@ public interface DPPMetadataRepository {
                         metadata.setCreatedAt(r.getLocalDateTime("created_at"));
                         metadata.setModifiedAt(r.getLocalDateTime("modified_at"));
                         metadata.setDppHash(r.getString("dpp_hash"));
+                        metadata.setContentType(r.getString("dpp_content_type"));
                         return metadata;
                     });
 }

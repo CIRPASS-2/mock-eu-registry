@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
-import it.extrared.registry.MetadataRegistryConfig;
 import it.extrared.registry.api.rest.RestUtils;
 import it.extrared.registry.api.rest.jws.JWSService;
 import it.extrared.registry.metadata.DPPMetadataEntry;
