@@ -15,6 +15,11 @@ import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 
+/**
+ * Implementation of {@link JWKSResource} that exposes the registry's RSA public key as a JSON Web
+ * Key Set (JWKS). Clients and other parties can fetch this endpoint to obtain the public key needed
+ * to verify JWTs (proof of registration) issued by this registry.
+ */
 @ApplicationScoped
 public class JWKSResourceImpl implements it.extrared.registry.api.rest.JWKSResource {
 
@@ -26,6 +31,13 @@ public class JWKSResourceImpl implements it.extrared.registry.api.rest.JWKSResou
     @Inject Vertx vertx;
     private static final Logger LOGGER = Logger.getLogger(JWKSResourceImpl.class);
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Loads the RSA public key from {@code smallrye.jwt.encrypt.key.location}, wraps it in a
+     * {@link RsaJsonWebKey} with the configured key-id and {@code RS256} algorithm, and serializes
+     * the resulting {@link JsonWebKeySet} to JSON.
+     */
     @Override
     public Uni<String> jwks() throws Exception {
         Uni<RsaJsonWebKey> jwk = load().map(this::asRsaJsonWebKey);

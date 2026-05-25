@@ -13,14 +13,33 @@ public class UserAttributesAccessor {
 
     @Inject MetadataRegistryConfig registryConfig;
 
+    /**
+     * Returns the Responsible Economic Operator identifier extracted from the current JWT, using
+     * the claim name configured in {@link MetadataRegistryConfig#reoidClaimName()}.
+     *
+     * @return the reoId claim value, or {@code null} if the claim is absent.
+     */
     public String getReoId() {
         return identity.getClaim(registryConfig.reoidClaimName());
     }
 
+    /**
+     * Returns the Responsible Economic Operator name extracted from the current JWT, using the
+     * claim name configured in {@link MetadataRegistryConfig#reoNameClaimName()}.
+     *
+     * @return the reoName claim value, or {@code null} if the claim is absent.
+     */
     public String getReoName() {
         return identity.getClaim(registryConfig.reoNameClaimName());
     }
 
+    /**
+     * Returns the JWKS URI extracted from the current JWT, using the claim name configured in
+     * {@link MetadataRegistryConfig.Jws#jwksUriClaimName()}. This URI points to the public-key set
+     * that can be used to verify a detached JWS produced by the caller.
+     *
+     * @return the jwksUri claim value, or {@code null} if the claim is absent.
+     */
     public String getJwksUri() {
         return identity.getClaim(registryConfig.jws().jwksUriClaimName());
     }

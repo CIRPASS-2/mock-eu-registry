@@ -36,6 +36,11 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestQuery;
 import org.jboss.resteasy.reactive.RestResponse;
 
+/**
+ * JAX-RS implementation of {@link DPPMetadataResource}. Handles incoming metadata registration
+ * requests by first verifying the optional detached JWS signature and then delegating to {@link
+ * DPPMetadataService} for persistence.
+ */
 @ApplicationScoped
 public class DPPMetadataResourceImpl implements DPPMetadataResource {
 

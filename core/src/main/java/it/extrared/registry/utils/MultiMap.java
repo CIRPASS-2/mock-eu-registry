@@ -41,6 +41,15 @@ public class MultiMap<K, V> extends HashMap<K, List<V>> {
         get(key).add(value);
     }
 
+    /**
+     * Replaces the element at the specified position in the list associated with the given key. If
+     * no list exists yet for the key, an empty list is created first.
+     *
+     * @param key the key of the list.
+     * @param value the value to place at {@code pos}.
+     * @param pos zero-based index of the element to replace.
+     * @throws IndexOutOfBoundsException if {@code pos} is out of range for the existing list.
+     */
     public void addAt(K key, V value, int pos) {
         if (!containsKey(key)) {
             List<V> values = new ArrayList<>();
