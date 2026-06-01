@@ -142,20 +142,20 @@ data_schema JSONB NOT NULL
 );
 ```
 
-**MariaDB Schema Script:**
+**MySQL/MariaDB Schema Script:**
 ```sql
 CREATE TABLE IF NOT EXISTS dpp_metadata (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     registry_id VARCHAR(36) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    metadata JSON NOT NULL
+    metadata LONGTEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS json_schemas (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_schema JSON NOT NULL
+    data_schema LONGTEXT NOT NULL
 );
 ```
 
