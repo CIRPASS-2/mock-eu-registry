@@ -63,9 +63,6 @@ public class DPPMetadataResourceImpl implements DPPMetadataResource {
     @Override
     public Uni<RestResponse<DPPMetadataEntry>> registerDPP(
             @Context HttpHeaders headers, @RestQuery List<String> autocompleteBy, byte[] body) {
-        LOGGER.infof(
-                "Resource method body length: %d, first byte: %d, last byte: %d",
-                body.length, body[0], body[body.length - 1]);
         Uni<Void> jwsCheck = jwsService.verify(body, headers);
         return jwsCheck.flatMap(
                 Unchecked.function(

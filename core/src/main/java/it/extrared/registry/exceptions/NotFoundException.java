@@ -1,4 +1,4 @@
-package it.extrared.registry.api.rest.exceptions;
+package it.extrared.registry.exceptions;
 
 /**
  * Thrown when a requested resource (e.g., a metadata entry identified by its registry ID) cannot be

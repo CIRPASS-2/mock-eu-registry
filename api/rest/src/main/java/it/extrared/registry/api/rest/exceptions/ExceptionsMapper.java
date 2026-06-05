@@ -18,10 +18,7 @@ package it.extrared.registry.api.rest.exceptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.extrared.registry.api.rest.RestUtils;
-import it.extrared.registry.exceptions.InvalidDPPException;
-import it.extrared.registry.exceptions.InvalidOperationException;
-import it.extrared.registry.exceptions.JsonSchemaException;
-import it.extrared.registry.exceptions.SchemaValidationException;
+import it.extrared.registry.exceptions.*;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.RestResponse;
@@ -73,8 +70,7 @@ public class ExceptionsMapper {
     }
 
     @ServerExceptionMapper
-    public RestResponse<ErrorPayload> mapException(
-            it.extrared.registry.api.rest.exceptions.NotFoundException e) {
+    public RestResponse<ErrorPayload> mapException(NotFoundException e) {
         return RestUtils.respWithBodyAndStatus(
                 Response.Status.NOT_FOUND, new ErrorPayload(e.getMessage()));
     }

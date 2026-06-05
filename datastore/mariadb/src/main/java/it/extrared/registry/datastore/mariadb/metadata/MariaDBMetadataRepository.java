@@ -112,7 +112,7 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
         Uni<RowSet<DPPMetadataEntry>> rs =
                 conn.preparedQuery(sql)
                         .mapping(r -> ROW_MAPPER.apply(r, AS_JSON_META))
-                        .execute(Tuple.of(registryId));
+                        .execute(Tuple.of(registryId, reoId));
         return rs.map(SQLClientUtils::firstOrNull)
                 .invoke(
                         m ->

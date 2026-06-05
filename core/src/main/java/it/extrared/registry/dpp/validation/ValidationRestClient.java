@@ -17,10 +17,10 @@ package it.extrared.registry.dpp.validation;
 
 import io.quarkus.rest.client.reactive.ClientExceptionMapper;
 import io.smallrye.mutiny.Uni;
+import it.extrared.registry.exceptions.NotFoundException;
 import it.extrared.registry.exceptions.ValidatorException;
 import it.extrared.registry.security.AuthorizationHeaderForward;
 import jakarta.ws.rs.HeaderParam;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;

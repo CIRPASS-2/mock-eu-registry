@@ -756,7 +756,7 @@ Content-Type: application/json
 }
 ```
 
-> **Note**: `dppHash` is the SHA-256 hex digest of the DPP payload fetched from `liveURL`.
+> **Note**: `dppHash` is returned as `sha256:<hex>` where `<hex>` is the SHA-256 hex digest of the DPP payload fetched from `liveURL`.
 > `contentType` is the MIME type returned by the DPP endpoint. Both fields are `null` when DPP
 > fetching is not performed (i.e., when DPP validation is disabled).
 
@@ -965,7 +965,7 @@ key is published at [`GET /.well-known/jwks.json`](#get-well-knownjwksjson).
   "commodityCode": "85176200",
   "reoId": "LEI-529900T8BM49AURSDO55",
   "reoName": "Acme Corp",
-  "dppHash": "e3b0c44298fc1c149afb4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "dppHash": "sha256:e3b0c44298fc1c149afb4c8996fb92427ae41e4649b934ca495991b7852b855",
   "dppContentType": "application/ld+json"
 }
 ```

@@ -32,6 +32,8 @@ import io.vertx.mutiny.sqlclient.SqlConnection;
 import it.extrared.registry.MetadataRegistryConfig;
 import it.extrared.registry.dpp.DPPFetcher;
 import it.extrared.registry.dpp.validation.DPPValidator;
+import it.extrared.registry.exceptions.InvalidOperationException;
+import it.extrared.registry.exceptions.NotFoundException;
 import it.extrared.registry.exceptions.SchemaValidationException;
 import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.update.DPPMetadataUpdater;
@@ -39,7 +41,6 @@ import it.extrared.registry.security.UserAttributesAccessor;
 import it.extrared.registry.utils.CommonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -258,7 +259,13 @@ public class DPPMetadataService {
     }
 
     private Uni<DppWithCType> getDpp(DPPMetadataEntry entry) {
-        return dppFetcher.fetchDPP(getUrl(entry)).map(this::toDto);
+        String url = getUrl(entry);
+        if (url == null || url.isBlank()) {
+            throw new InvalidOperationException(
+                    "Expected to find a live url in metadata under field name %s but did not find any."
+                            .formatted(config.liveUrlFieldName()));
+        }
+        return dppFetcher.fetchDPP(url).map(this::toDto);
     }
 
     private DppWithCType toDto(HttpResponse<Buffer> response) {

@@ -94,19 +94,20 @@ public class DPPMetadataEntry {
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (object == null || getClass() != object.getClass()) return false;
-        DPPMetadataEntry that = (DPPMetadataEntry) object;
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        DPPMetadataEntry that = (DPPMetadataEntry) o;
         return Objects.equals(registryId, that.registryId)
                 && Objects.equals(createdAt, that.createdAt)
                 && Objects.equals(modifiedAt, that.modifiedAt)
                 && Objects.equals(dppHash, that.dppHash)
+                && Objects.equals(contentType, that.contentType)
                 && Objects.equals(metadata, that.metadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(registryId, createdAt, modifiedAt, dppHash, metadata);
+        return Objects.hash(registryId, createdAt, modifiedAt, dppHash, contentType, metadata);
     }
 
     @Override
@@ -119,8 +120,12 @@ public class DPPMetadataEntry {
                 + createdAt
                 + ", modifiedAt="
                 + modifiedAt
-                + ", dppHash="
+                + ", dppHash='"
                 + dppHash
+                + '\''
+                + ", contentType='"
+                + contentType
+                + '\''
                 + ", metadata="
                 + metadata
                 + '}';
