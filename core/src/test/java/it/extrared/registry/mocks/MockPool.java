@@ -35,4 +35,9 @@ public class MockPool extends Pool {
     public <T> Uni<T> withTransaction(Function<SqlConnection, Uni<T>> function) {
         return function.apply(Mockito.mock(SqlConnection.class));
     }
+
+    @Override
+    public <T> Uni<T> withConnection(Function<SqlConnection, Uni<T>> function) {
+        return function.apply(Mockito.mock(SqlConnection.class));
+    }
 }

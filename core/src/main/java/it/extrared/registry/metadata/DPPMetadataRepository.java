@@ -31,6 +31,9 @@ import java.util.function.Function;
  */
 public interface DPPMetadataRepository {
 
+    Uni<DPPMetadataEntry> findByRegistryIdAndReoId(
+            SqlConnection conn, String registryId, String reoId);
+
     Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi);
 
     Uni<DPPMetadataEntry> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters);
@@ -47,6 +50,8 @@ public interface DPPMetadataRepository {
                         metadata.setMetadata(f.apply(r));
                         metadata.setCreatedAt(r.getLocalDateTime("created_at"));
                         metadata.setModifiedAt(r.getLocalDateTime("modified_at"));
+                        metadata.setDppHash(r.getString("dpp_hash"));
+                        metadata.setContentType(r.getString("dpp_content_type"));
                         return metadata;
                     });
 }

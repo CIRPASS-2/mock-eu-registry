@@ -26,6 +26,7 @@ import io.smallrye.mutiny.tuples.Tuple2;
 import io.vertx.mutiny.sqlclient.Pool;
 import it.extrared.registry.metadata.DPPMetadataEntry;
 import it.extrared.registry.metadata.DPPMetadataRepository;
+import it.extrared.registry.utils.CommonUtils;
 import jakarta.inject.Inject;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,8 @@ public class MariaDBDPPMetadataRepositoryTest {
                   }
                 """;
         DPPMetadataEntry metadataEntry = new DPPMetadataEntry(om.readTree(json));
+        metadataEntry.setRegistryId(CommonUtils.generateTimeBasedUUID());
+        metadataEntry.setDppHash(CommonUtils.sha256("{}".getBytes()));
         asserter.assertNotNull(
                 () ->
                         pool.withTransaction(c -> repository.save(c, metadataEntry))
@@ -104,6 +107,8 @@ public class MariaDBDPPMetadataRepositoryTest {
                 """;
 
         DPPMetadataEntry metadataEntry = new DPPMetadataEntry(om.readTree(json));
+        metadataEntry.setRegistryId(CommonUtils.generateTimeBasedUUID());
+        metadataEntry.setDppHash(CommonUtils.sha256("{}".getBytes()));
         asserter.assertNotNull(
                 () ->
                         pool.withTransaction(c -> repository.save(c, metadataEntry))

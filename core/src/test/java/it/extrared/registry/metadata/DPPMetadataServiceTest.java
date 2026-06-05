@@ -20,16 +20,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.vertx.RunOnVertxContext;
 import io.quarkus.test.vertx.UniAsserter;
+import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import it.extrared.registry.TestSupport;
 import it.extrared.registry.exceptions.InvalidDPPException;
 import it.extrared.registry.exceptions.SchemaValidationException;
+import it.extrared.registry.security.UserAttributesAccessor;
 import jakarta.inject.Inject;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 @QuarkusTest
 public class DPPMetadataServiceTest extends TestSupport {
@@ -81,6 +85,7 @@ public class DPPMetadataServiceTest extends TestSupport {
 
     @Inject ObjectMapper om;
     @Inject DPPMetadataService metadataService;
+    @InjectMock UserAttributesAccessor accessor;
 
     @Test
     @RunOnVertxContext
@@ -146,5 +151,14 @@ public class DPPMetadataServiceTest extends TestSupport {
                     assertEquals(InvalidDPPException.class, t.getClass());
                     assertFalse(((InvalidDPPException) t).getValidationReport().isValid());
                 });
+    }
+
+    @Test
+    @RunOnVertxContext
+    public void testProofOfRegistration(UniAsserter asserter) {
+        Mockito.when(accessor.getReoId()).thenReturn("12345");
+        Mockito.when(accessor.getReoName()).thenReturn("Operator X");
+        Uni<String> proof = metadataService.getProofOfRegistration("id", "reoId");
+        asserter.assertNotNull(() -> proof.invoke(j -> System.out.println(j)));
     }
 }

@@ -30,6 +30,10 @@ This application provides an HTTP-based registry service for persisting and mana
 - **Autocompletion capabilities** for metadata fields
 - **Configurable update strategies** for handling duplicate UPI entries
 - **Integration with the DPP validator** to validate DPP data before persisting the DPP metadata entry. DPP validator available on the [CIRPASS-2 GitHub](https://github.com/CIRPASS-2/dpp-validator?tab=readme-ov-file#dpp-validator)
+- **JWKS endpoint** (`GET /.well-known/jwks.json`) exposing the registry's RSA public key for JWT verification
+- **Detached JWS verification** of incoming metadata payloads using the caller's JWKS URI
+- **Proof of Registration** issued as a signed JWT containing registry identity and DPP hash
+- **DPP content hash** (SHA-256) and **content-type** recorded alongside each metadata entry
 
 ## Table of Contents
 
@@ -44,7 +48,10 @@ This application provides an HTTP-based registry service for persisting and mana
 - [REST API](#rest-api)
   - [Metadata Endpoints](#metadata-endpoints)
   - [Schema Management Endpoints](#schema-management-endpoints)
+  - [JWKS Endpoint](#jwks-endpoint)
 - [DPP data validation](#dpp-data-validation)
+- [Detached JWS Verification](#detached-jws-verification)
+- [Proof of Registration](#proof-of-registration)
 - [Authentication & Authorization](#authentication--authorization)
 
 ## Quick Start
@@ -121,7 +128,7 @@ Example: `vertx-reactive:mysql://localhost:3306/registry_db`
 
 > **Note**: For MariaDB, the reactive driver uses the `mysql` protocol identifier.
 
-**PostgreSQL Schema Script:**
+**PostgreSQL Schema Script (v1.1.0 — fresh install):**
 ```sql
 CREATE SEQUENCE IF NOT EXISTS dpp_metadata_seq;
 
@@ -130,7 +137,9 @@ id BIGINT PRIMARY KEY DEFAULT nextval('dpp_metadata_seq'),
 registry_id VARCHAR(36) NOT NULL,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-metadata JSONB NOT NULL
+metadata JSONB NOT NULL,
+dpp_hash VARCHAR(71),
+dpp_content_type VARCHAR(50)
 );
 
 CREATE SEQUENCE IF NOT EXISTS json_schema_seq;
@@ -142,14 +151,16 @@ data_schema JSONB NOT NULL
 );
 ```
 
-**MariaDB Schema Script:**
+**MariaDB Schema Script (v1.1.0 — fresh install):**
 ```sql
 CREATE TABLE IF NOT EXISTS dpp_metadata (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     registry_id VARCHAR(36) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    metadata JSON NOT NULL
+    metadata JSON NOT NULL,
+    dpp_hash VARCHAR(71),
+    dpp_content_type VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS json_schemas (
@@ -157,6 +168,22 @@ CREATE TABLE IF NOT EXISTS json_schemas (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     data_schema JSON NOT NULL
 );
+```
+
+#### Database Migration Scripts
+
+If you are upgrading from a previous installation, apply the migration script for your database engine.
+
+> **v1.0.0 → v1.1.0**: adds `dpp_hash` and `dpp_content_type` columns to `dpp_metadata`.
+
+**PostgreSQL migration:**
+```sql
+ALTER TABLE dpp_metadata ADD COLUMN dpp_hash VARCHAR(71), ADD COLUMN dpp_content_type VARCHAR(50);
+```
+
+**MariaDB migration:**
+```sql
+ALTER TABLE dpp_metadata ADD COLUMN dpp_hash VARCHAR(71), ADD COLUMN dpp_content_type VARCHAR(50);
 ```
 
 #### OpenID Connect Configuration
@@ -173,13 +200,23 @@ CREATE TABLE IF NOT EXISTS json_schemas (
 | Variable                              | Environment Variable                | Description                                                                                                                                             | Default |
 |---------------------------------------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | `registry.autocompletion-enabled-for` | `AUTOCOMPLETION_ENABLED_FOR`        | Comma-separated list of fields eligible for autocompletion                                                                                              | -       |
-| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`          | Strategy for handling duplicate UPI: `MODIFY` or `APPEND_WITH_NEW_ID` or `NONE`                                                                         | -       |
+| `registry.update-strategy`            | `REGISTRY_UPDATE_STRATEGY`          | Strategy for handling duplicate UPI: `MODIFY`, `APPEND_WITH_NEW_ID`, `APPEND_WITH_SAME_ID`, or `NONE`                                                   | `MODIFY` |
 | `registry.upi-field-name`             | `REGISTRY_UPI_FIELD_NAME`           | Custom name for the unique product identifier field in the schema                                                                                       | `upi`   |
 | `registry.reoid-field-name`           | `REGISTRY_REOID_FIELD_NAME`         | Custom name for the responsible economic operator field in the schema                                                                                   | `reoId` |
 | `registry.role-mappings`              | `REGISTRY_ROLE_MAPPINGS`            | Comma-separated mappings between external and internal roles                                                                                            | -       |
 | `registry.json-schema-location`       | `REGISTRY_JSON_SCHEMA_LOCATION`     | Location of custom JSON schema (URL, file URI, or absolute path)                                                                                        | -       |
-| `registry.reoid-from-claim-enabled`   | `REGISTRY_REOID_FROM_CLAIM_ENABLED` | True if the reoid value for incoming DPP metadata entry should be taken from a JWT claim. False if it should be takend from the metadata payload itself | false   |
-| `registry.reoid-claim-name`           | `REGISTRY_REOID_CLAIM_NAME`         | The name of the jwt claim from which retrieving the reo Id. It is active only if the reoid from claim option is enabled                                 | `reoId` |
+| `registry.reoid-from-claim-enabled`   | `REGISTRY_REOID_FROM_CLAIM_ENABLED` | True if the reoid value for incoming DPP metadata entry should be taken from a JWT claim. False if it should be taken from the metadata payload itself | false   |
+| `registry.reoid-claim-name`           | `REGISTRY_REOID_CLAIM_NAME`         | The name of the JWT claim from which retrieving the reoId. Active only if the reoid-from-claim option is enabled                                      | `reoId` |
+| `registry.proof-issuer`               | `REGISTRY_PROOF_ISSUER`             | The `iss` claim value placed in the Proof of Registration JWT                                                                                         | `http://localhost:8080` |
+| `registry.key-id`                     | `REGISTRY_KEY_ID`                   | The `kid` field advertised in the JWKS endpoint (`/.well-known/jwks.json`)                                                                            | `mock-eu-registry-key-1` |
+
+#### Detached JWS Configuration
+
+| Variable                                    | Environment Variable                       | Description                                                                                              | Default              |
+|---------------------------------------------|--------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------|
+| `registry.jws.verification-enabled`         | `REGISTRY_JWS_VERIFICATION_ENABLED`        | Enable detached JWS verification on metadata registration requests                                       | `false`              |
+| `registry.jws.jwks-uri-claim-name`          | `REGISTRY_JWS_JWKS_URI_CLAIM_NAME`         | Name of the JWT claim that carries the caller's JWKS URI (used to fetch the signing public key)          | `jwksUri`            |
+| `registry.jws.header-name`                  | `REGISTRY_JWS_HEADER_NAME`                 | Name of the HTTP request header that carries the detached JWS token                                      | `x-jws-signature`    |
 
 
 #### DPP validation configuration
@@ -196,12 +233,12 @@ CREATE TABLE IF NOT EXISTS json_schemas (
 |---------------------|----------------------|--------------------------|---------|
 | `quarkus.http.port` | `QUARKUS_HTTP_PORT`  | HTTP port of the service | 8080    |
 
-debug(LOGGER,()->"received DPP with content type %s".formatted());
 #### Configuration Notes
 
 **Update Strategy**
 - `MODIFY`: Overwrites existing metadata when the same UPI is submitted
-- `APPEND_WITH_NEW_ID`: Creates a new entry even if the UPI already exists
+- `APPEND_WITH_NEW_ID`: Creates a new entry with a different registry ID even if the UPI already exists
+- `APPEND_WITH_SAME_ID`: Creates a new entry keeping the same registry ID as the existing one
 - `NONE`: No update allowed. A BAD REQUEST response is returned if a metadata associated to the upi already exists
 
 **Role Mappings**
@@ -243,6 +280,17 @@ registry.update-strategy=MODIFY
 registry.upi-field-name=upi
 registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
 registry.json-schema-location=/etc/registry/custom-schema.json
+
+# Proof of Registration
+registry.proof-issuer=https://registry.example.com
+registry.key-id=my-registry-key-1
+smallrye.jwt.sign.key.location=private-key.pem
+smallrye.jwt.encrypt.key.location=public-key.pem
+
+# Detached JWS Verification (optional, disabled by default)
+registry.jws.verification-enabled=false
+registry.jws.header-name=x-jws-signature
+registry.jws.jwks-uri-claim-name=jwksUri
 ```
 
 #### Application Properties (MariaDB)
@@ -265,6 +313,17 @@ registry.update-strategy=MODIFY
 registry.upi-field-name=upi
 registry.role-mappings=keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
 registry.json-schema-location=/etc/registry/custom-schema.json
+
+# Proof of Registration
+registry.proof-issuer=https://registry.example.com
+registry.key-id=my-registry-key-1
+smallrye.jwt.sign.key.location=private-key.pem
+smallrye.jwt.encrypt.key.location=public-key.pem
+
+# Detached JWS Verification (optional, disabled by default)
+registry.jws.verification-enabled=false
+registry.jws.header-name=x-jws-signature
+registry.jws.jwks-uri-claim-name=jwksUri
 ```
 
 #### Docker Compose (PostgreSQL)
@@ -295,6 +354,13 @@ services:
       REGISTRY_UPI_FIELD_NAME: upi
       REGISTRY_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
       REGISTRY_JSON_SCHEMA_LOCATION: /etc/registry/custom-schema.json
+      # Proof of Registration
+      REGISTRY_PROOF_ISSUER: https://registry.example.com
+      REGISTRY_KEY_ID: my-registry-key-1
+      # Detached JWS (optional)
+      REGISTRY_JWS_VERIFICATION_ENABLED: "false"
+      REGISTRY_JWS_HEADER_NAME: x-jws-signature
+      REGISTRY_JWS_JWKS_URI_CLAIM_NAME: jwksUri
     depends_on:
       - postgres
     volumes:
@@ -343,6 +409,13 @@ services:
       REGISTRY_UPI_FIELD_NAME: upi
       REGISTRY_ROLE_MAPPINGS: keycloak_admin:admin,keycloak_eu:eu,keycloak_operator:eo
       REGISTRY_JSON_SCHEMA_LOCATION: /etc/registry/custom-schema.json
+      # Proof of Registration
+      REGISTRY_PROOF_ISSUER: https://registry.example.com
+      REGISTRY_KEY_ID: my-registry-key-1
+      # Detached JWS (optional)
+      REGISTRY_JWS_VERIFICATION_ENABLED: "false"
+      REGISTRY_JWS_HEADER_NAME: x-jws-signature
+      REGISTRY_JWS_JWKS_URI_CLAIM_NAME: jwksUri
     depends_on:
       - mariadb
     volumes:
@@ -382,6 +455,11 @@ data:
   REGISTRY_UPI_FIELD_NAME: "upi"
   REGISTRY_ROLE_MAPPINGS: "keycloak_admin:admin,keycloak_user:eu,keycloak_operator:eo"
   REGISTRY_JSON_SCHEMA_LOCATION: "/etc/registry/custom-schema.json"
+  REGISTRY_PROOF_ISSUER: "https://registry.example.com"
+  REGISTRY_KEY_ID: "my-registry-key-1"
+  REGISTRY_JWS_VERIFICATION_ENABLED: "false"
+  REGISTRY_JWS_HEADER_NAME: "x-jws-signature"
+  REGISTRY_JWS_JWKS_URI_CLAIM_NAME: "jwksUri"
 
 ---
 apiVersion: v1
@@ -438,11 +516,12 @@ The application ships with a comprehensive default schema that includes:
 
 - **UPI** (Unique Product Identifier): Required identifier for the product
 - **REO ID** (Responsible Economic Operator ID): Required operator identifier
-- **URLs**: Live and backup URLs for DPP data retrieval
-- **Facility IDs**: Array of facility identifiers
+- **Facility IDs**: Required array of facility identifiers
+- **URLs**: Live and backup URLs for DPP data retrieval (HTTP and HTTPS)
 - **Commodity Code**: Product classification codes (HS Code, TARIC)
-- **Data Carrier Types**: Physical carriers (QR codes, RFID, NFC, etc.)
 - **Granularity Level**: Product scope (MODEL, BATCH, ITEM)
+- **Model UPI / Batch UPI**: Cross-reference identifiers required according to the granularity level
+- **Deactivated**: Required flag for ITEM-level entries
 
 <details>
 <summary>View complete default schema</summary>
@@ -459,6 +538,7 @@ The application ships with a comprehensive default schema that includes:
     "liveURL",
     "backupURL",
     "commodityCode",
+    "facilitiesId",
     "granularityLevel"
   ],
   "properties": {
@@ -467,19 +547,14 @@ The application ships with a comprehensive default schema that includes:
       "description": "Unique Product Identifier - the unique identifier of the product",
       "minLength": 1,
       "maxLength": 200,
-      "examples": [
-        "urn:epc:id:sgtin:0614141.107346.2017"
-      ]
+      "examples": ["urn:epc:id:sgtin:0614141.107346.2017"]
     },
     "reoId": {
       "type": "string",
       "description": "Responsible Economic Operator ID",
       "minLength": 1,
       "maxLength": 50,
-      "examples": [
-        "LEI-529900T8BM49AURSDO55",
-        "EORI-IT123456789"
-      ]
+      "examples": ["LEI-529900T8BM49AURSDO55", "EORI-IT123456789"]
     },
     "facilitiesId": {
       "type": "array",
@@ -490,69 +565,91 @@ The application ships with a comprehensive default schema that includes:
         "maxLength": 250
       },
       "description": "Facility ID where the product is manufactured/assembled",
-      "examples": [
-        "GLN-5412345000013",
-        "FAC-MILANO-001"
-      ]
+      "examples": ["GLN-5412345000013", "FAC-MILANO-001"]
     },
     "liveURL": {
       "type": "string",
       "format": "uri",
       "description": "Primary URL to retrieve the related DPP data",
-      "pattern": "^https://",
-      "examples": [
-        "https://dpp.example.com/product/12345"
-      ]
+      "pattern": "^http",
+      "examples": ["https://dpp.example.com/product/12345"]
     },
     "backupURL": {
       "type": "string",
       "format": "uri",
       "description": "Backup URL to retrieve the related DPP data",
-      "pattern": "^https://",
-      "examples": [
-        "https://backup-dpp.example.com/product/12345"
-      ]
+      "pattern": "^http",
+      "examples": ["https://backup-dpp.example.com/product/12345"]
     },
     "commodityCode": {
       "type": "string",
       "description": "The commodity code of the product (e.g., HS Code, TARIC)",
       "pattern": "^[0-9]{4,10}$",
-      "examples": [
-        "85176200",
-        "8517620090"
-      ]
+      "examples": ["85176200", "8517620090"]
     },
     "granularityLevel": {
       "type": "string",
       "description": "The granularity level of the DPP",
-      "enum": [
-        "MODEL",
-        "BATCH",
-        "ITEM"
-      ],
-      "examples": [
-        "MODEL"
-      ]
+      "enum": ["MODEL", "BATCH", "ITEM"],
+      "examples": ["MODEL"]
     },
     "deactivated": {
       "type": ["boolean", "null"],
-      "description": "True if the DPP has been deactivated, false/null otherwise. The property must be present if the granularityLevel equals = ITEM",
+      "description": "True if the DPP has been deactivated, false/null otherwise. Required when granularityLevel = ITEM",
       "examples": [true, false, null]
+    },
+    "modelUpi": {
+      "type": "string",
+      "description": "The UPI of the model-level registry entry. Required when granularityLevel = BATCH or ITEM",
+      "minLength": 1,
+      "maxLength": 200,
+      "examples": ["urn:epc:id:sgtin:0614141.107346.2017"]
+    },
+    "batchUpi": {
+      "type": "string",
+      "description": "The UPI of the batch-level registry entry. Required when granularityLevel = ITEM",
+      "minLength": 1,
+      "maxLength": 200,
+      "examples": ["urn:epc:id:sgtin:0614141.107346.2017"]
     }
   },
-  "if": {
-    "properties": {
-      "granularityLevel": { "const": "ITEM" }
+  "allOf": [
+    {
+      "comment": "ITEM: deactivated + modelUpi + batchUpi required; else deactivated forbidden",
+      "if": {
+        "properties": { "granularityLevel": { "const": "ITEM" } },
+        "required": ["granularityLevel"]
+      },
+      "then": { "required": ["deactivated", "modelUpi", "batchUpi"] },
+      "else": { "not": { "required": ["deactivated"] } }
+    },
+    {
+      "comment": "BATCH: modelUpi required, batchUpi forbidden",
+      "if": {
+        "properties": { "granularityLevel": { "const": "BATCH" } },
+        "required": ["granularityLevel"]
+      },
+      "then": {
+        "required": ["modelUpi"],
+        "not": { "required": ["batchUpi"] }
+      }
+    },
+    {
+      "comment": "MODEL: modelUpi and batchUpi forbidden",
+      "if": {
+        "properties": { "granularityLevel": { "const": "MODEL" } },
+        "required": ["granularityLevel"]
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["modelUpi"] },
+            { "required": ["batchUpi"] }
+          ]
+        }
+      }
     }
-  },
-  "then": {
-    "required": ["deactivated"]
-  },
-  "else": {
-    "not": {
-      "required": ["deactivated"]
-    }
-  }
+  ]
 }
 ```
 
@@ -611,7 +708,8 @@ Creates or updates a metadata entry in the registry.
 - If the UPI already exists: behavior depends on the configured [update strategy](#configuration-notes)
   - `MODIFY`: overwrites the existing entry
   - `APPEND_WITH_NEW_ID`: creates a new entry with a different registry ID
-  - `NONE`: update is not allowed.
+  - `APPEND_WITH_SAME_ID`: creates a new entry preserving the existing registry ID
+  - `NONE`: update is not allowed; returns `400 Bad Request`
 
 **Query Parameters:**
 
@@ -642,6 +740,10 @@ Content-Type: application/json
 ```json
 {
   "registryId": "7f3e9c2a-5b8d-4e1f-a6c3-9d4b2e7f8a1c",
+  "createdAt": "2026-05-22 10:30:00",
+  "modifiedAt": null,
+  "dppHash": "e3b0c44298fc1c149afb4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "contentType": "application/json+ld",
   "metadata": {
     "reoId": "LEI-529900T8BM49AURSDO55",
     "upi": "urn:epc:id:sgtin:0614141.107346.2017",
@@ -653,6 +755,69 @@ Content-Type: application/json
   }
 }
 ```
+
+> **Note**: `dppHash` is returned as `sha256:<hex>` where `<hex>` is the SHA-256 hex digest of the DPP payload fetched from `liveURL`.
+> `contentType` is the MIME type returned by the DPP endpoint. Both fields are `null` when DPP
+> fetching is not performed (i.e., when DPP validation is disabled).
+
+### JWKS Endpoint
+
+#### GET /.well-known/jwks.json
+
+Returns the registry's RSA public key as a JSON Web Key Set (JWKS). Clients can use this endpoint
+to obtain the public key needed to verify the **Proof of Registration** JWTs issued by this
+registry.
+
+No authentication is required for this endpoint.
+
+**Example Response:**
+
+```json
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "kid": "mock-eu-registry-key-1",
+      "use": "sig",
+      "alg": "RS256",
+      "n": "...",
+      "e": "AQAB"
+    }
+  ]
+}
+```
+
+#### GET /metadata/v1/{registryId}/proof
+
+Returns a signed **Proof of Registration** JWT for the entry identified by `registryId`.
+
+**Path Parameters:**
+
+| Parameter    | Type   | Description                              |
+|--------------|--------|------------------------------------------|
+| `registryId` | string | The unique registry ID of the DPP entry  |
+
+**Query Parameters:**
+
+| Parameter | Type   | Description                                                                     |
+|-----------|--------|---------------------------------------------------------------------------------|
+| `reoId`   | string | Optional. Filters by Responsible Economic Operator ID to disambiguate entries   |
+
+**Response:** `application/jwt` — a compact JWT signed with the registry's private key.
+
+The JWT payload includes:
+- `iss`: the configured proof issuer (`registry.proof-issuer`)
+- `registryId`: the unique registry identifier
+- `registeredAt`: ISO-8601 timestamp of the original registration
+- `commodityCode`: product commodity code
+- `reoId`: Responsible Economic Operator identifier
+- `reoName`: Responsible Economic Operator name
+- `dppHash`: SHA-256 hex digest of the DPP payload (if available)
+- `dppContentType`: MIME type of the DPP payload (if available)
+
+Verify the JWT using the public key from [`GET /.well-known/jwks.json`](#get-well-knownjwksjson).
+
+---
 
 ### Schema Management Endpoints
 
@@ -742,6 +907,83 @@ Removes the currently active schema. After deletion, the system reverts to the p
 3. Otherwise, reverts to the default embedded schema
 
 
+## Detached JWS Verification
+
+When `registry.jws.verification-enabled` is set to `true`, the registry verifies the integrity of
+each incoming metadata payload using a **detached JSON Web Signature (JWS)**.
+
+### How It Works
+
+1. The caller computes a JWS (RS256) over the raw request body and removes the payload segment,
+   producing a compact string of the form `<header>..<signature>`.
+2. The resulting detached JWS is placed in the HTTP header defined by `registry.jws.header-name`
+   (default: `x-jws-signature`).
+3. The registry reads the caller's **JWKS URI** from the JWT claim named
+   `registry.jws.jwks-uri-claim-name` (default: `jwksUri`).
+4. The public key is fetched from that JWKS URI and used to re-verify the signature against the
+   original request body.
+
+### Error Responses
+
+| Condition                              | HTTP Status                |
+|----------------------------------------|----------------------------|
+| JWS header missing                     | `400 Bad Request`          |
+| Signature invalid or key not trusted   | `401 Unauthorized`         |
+
+### Configuration Summary
+
+```properties
+registry.jws.verification-enabled=true
+registry.jws.header-name=x-jws-signature
+registry.jws.jwks-uri-claim-name=jwksUri
+```
+
+---
+
+## Proof of Registration
+
+The registry can issue a **Proof of Registration** — a signed JWT that certifies that a specific
+DPP has been registered in the registry at a given point in time.
+
+### Retrieving a Proof
+
+```http
+GET /metadata/v1/{registryId}/proof
+Accept: application/jwt
+```
+
+The response is a compact JWT (RS256) signed with the registry's private key. The signing public
+key is published at [`GET /.well-known/jwks.json`](#get-well-knownjwksjson).
+
+### Proof JWT Payload Example
+
+```json
+{
+  "iss": "http://registry.example.com",
+  "registryId": "7f3e9c2a-5b8d-4e1f-a6c3-9d4b2e7f8a1c",
+  "registeredAt": "2026-05-22T10:30:00",
+  "commodityCode": "85176200",
+  "reoId": "LEI-529900T8BM49AURSDO55",
+  "reoName": "Acme Corp",
+  "dppHash": "sha256:e3b0c44298fc1c149afb4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "dppContentType": "application/ld+json"
+}
+```
+
+### Configuration
+
+```properties
+# Issuer placed in the proof JWT
+registry.proof-issuer=https://registry.example.com
+# Key ID used in JWKS and in the proof JWT header
+registry.key-id=my-registry-key-1
+# Location of the RSA private/public key pair (SmallRye JWT property)
+smallrye.jwt.sign.key.location=private-key.pem
+smallrye.jwt.encrypt.key.location=public-key.pem
+```
+
+---
+
 ## DPP data validation
 
 When DPP validation is enabled (see the [DPP validation configuration section](#dpp-validation-configuration)), the registry retrieves the DPP from the decentralized repository using the live URL specified in the registry entry.
@@ -759,6 +1001,8 @@ When validation is enabled, the registry returns different responses based on th
     "registryId": "3091ee93-0734-11f1-ae86-b79d61ccc308",
     "createdAt": "2026-02-11 11:26:55",
     "modifiedAt": null,
+    "dppHash": "a3f1c2d4e5b6789012345678901234567890abcdef1234567890abcdef123456",
+    "contentType": "application/ld+json",
     "metadata": {
        "reoId": "LEI-529900T8BM49AURSDO55",
        "facilitiesId": ["2343"],

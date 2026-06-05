@@ -19,6 +19,7 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.SqlConnection;
 import it.extrared.registry.metadata.DPPMetadataEntry;
 import it.extrared.registry.metadata.DPPMetadataRepository;
+import it.extrared.registry.utils.CommonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -39,6 +40,7 @@ public class AppendWithNewIdUpdateStrategy implements UpdateStrategy {
     @Override
     public Uni<DPPMetadataEntry> update(
             SqlConnection connection, DPPMetadataEntry dppMetadataEntry) {
+        dppMetadataEntry.setRegistryId(CommonUtils.generateTimeBasedUUID());
         return repository.save(connection, dppMetadataEntry);
     }
 }

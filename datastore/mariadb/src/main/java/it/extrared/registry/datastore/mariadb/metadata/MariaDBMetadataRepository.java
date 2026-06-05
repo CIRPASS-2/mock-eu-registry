@@ -33,7 +33,6 @@ import it.extrared.registry.jsonschema.Schema;
 import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.DPPMetadataEntry;
 import it.extrared.registry.metadata.DPPMetadataRepository;
-import it.extrared.registry.utils.CommonUtils;
 import it.extrared.registry.utils.JsonUtils;
 import it.extrared.registry.utils.SQLClientUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -67,13 +66,13 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
 
     private static final String INSERT =
             """
-            INSERT INTO dpp_metadata (registry_id,created_at,modified_at,metadata)
-            VALUES(?,?,?,?)
+            INSERT INTO dpp_metadata (registry_id,created_at,modified_at,metadata,dpp_hash,dpp_content_type)
+            VALUES(?,?,?,?,?,?)
             """;
 
     private static final String UPDATE =
             """
-            UPDATE dpp_metadata SET modified_at=?, metadata=? WHERE
+            UPDATE dpp_metadata SET modified_at=?, metadata=?, dpp_hash=?, dpp_content_type=? WHERE
             JSON_VALUE(metadata,'$.%s') = ?
             """;
 
@@ -81,7 +80,7 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     public Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi) {
         String sql =
                         """
-                SELECT registry_id,metadata,created_at,modified_at
+                SELECT *
                 FROM dpp_metadata WHERE JSON_VALUE(metadata,'$.%s') = ? ORDER BY created_at DESC LIMIT 1
                 """
                         .formatted(config.upiFieldName());
@@ -101,10 +100,34 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     }
 
     @Override
+    public Uni<DPPMetadataEntry> findByRegistryIdAndReoId(
+            SqlConnection conn, String registryId, String reoId) {
+        String sql =
+                        """
+                SELECT *
+                FROM dpp_metadata WHERE registry_id=? AND JSON_VALUE(metadata,'$.%s') = ? ORDER BY modified_at DESC LIMIT 1
+                """
+                        .formatted(config.reoidFieldName());
+        debug(LOG, () -> "Executing query %s".formatted(sql));
+        Uni<RowSet<DPPMetadataEntry>> rs =
+                conn.preparedQuery(sql)
+                        .mapping(r -> ROW_MAPPER.apply(r, AS_JSON_META))
+                        .execute(Tuple.of(registryId, reoId));
+        return rs.map(SQLClientUtils::firstOrNull)
+                .invoke(
+                        m ->
+                                debug(
+                                        LOG,
+                                        () ->
+                                                "Retrieved metadata by registry_id %s is %s"
+                                                        .formatted(registryId, m)));
+    }
+
+    @Override
     public Uni<DPPMetadataEntry> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters) {
         String sql =
                 """
-                SELECT registry_id,metadata,created_at,modified_at
+                SELECT *
                 FROM dpp_metadata WHERE %s ORDER BY created_at DESC LIMIT 1
                 """;
         List<Object> params = filters.stream().map(Tuple2::getItem2).toList();
@@ -125,7 +148,6 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     public Uni<DPPMetadataEntry> save(SqlConnection conn, DPPMetadataEntry metadata) {
         try {
             debug(LOG, () -> "Persisting a metadata entry %s".formatted(metadata));
-            metadata.setRegistryId(CommonUtils.generateTimeBasedUUID());
             Uni<RowSet<Row>> row =
                     conn.preparedQuery(INSERT)
                             .execute(
@@ -133,8 +155,9 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
                                             metadata.getRegistryId(),
                                             metadata.getCreatedAt(),
                                             metadata.getModifiedAt(),
-                                            objectMapper.writeValueAsString(
-                                                    metadata.getMetadata())));
+                                            objectMapper.writeValueAsString(metadata.getMetadata()),
+                                            metadata.getDppHash(),
+                                            metadata.getContentType()));
             return row.map(r -> metadata)
                     .invoke(
                             m ->
@@ -155,7 +178,13 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
         String upi = metadata.getMetadata().get(config.upiFieldName()).asText();
         Uni<RowSet<Row>> row =
                 con.preparedQuery(UPDATE.formatted(config.upiFieldName()))
-                        .execute(Tuple.of(metadata.getModifiedAt(), metadata.getMetadata(), upi));
+                        .execute(
+                                Tuple.of(
+                                        metadata.getModifiedAt(),
+                                        metadata.getMetadata(),
+                                        metadata.getDppHash(),
+                                        metadata.getContentType(),
+                                        upi));
         return row.map(r -> metadata)
                 .invoke(
                         m ->

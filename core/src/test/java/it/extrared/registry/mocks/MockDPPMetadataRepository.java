@@ -15,6 +15,7 @@
  */
 package it.extrared.registry.mocks;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.Unremovable;
 import io.smallrye.mutiny.Uni;
@@ -36,7 +37,9 @@ public class MockDPPMetadataRepository implements DPPMetadataRepository {
                     """
             {
               "registryId":"%s",
-              "created_at":"2025/10/20 10:20:33",
+              "createdAt":"2025-10-20 10:20:33",
+              "dppHash":"sha256:cf8ba53815260624f9650526a536554b41f8cc2b8e48e885609916d7e06dc0ff",
+              "contentType":"application/json",
               "metadata": {
                 "reoId":"12345",
                 "upi":"54321",
@@ -50,7 +53,9 @@ public class MockDPPMetadataRepository implements DPPMetadataRepository {
                     """
             {
               "registryId":"%s",
-              "created_at":"2025/10/21 11:30:43",
+              "createdAt":"2025-10-21 11:30:43",
+              "dppHash":"sha256:cf8ba53815260624f9650526a536554b41f8cc2b8e48e885609916d7e06dc0ff",
+              "contentType":"application/json",
               "metadata": {
                 "reoId":"6789",
                 "upi":"54321",
@@ -62,6 +67,17 @@ public class MockDPPMetadataRepository implements DPPMetadataRepository {
                     .formatted(CommonUtils.generateTimeBasedUUID());
 
     @Inject ObjectMapper objectMapper;
+
+    @Override
+    public Uni<DPPMetadataEntry> findByRegistryIdAndReoId(
+            SqlConnection conn, String registryId, String reoId) {
+        try {
+            return Uni.createFrom()
+                    .item(objectMapper.readValue(METADATA_1, DPPMetadataEntry.class));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi) {

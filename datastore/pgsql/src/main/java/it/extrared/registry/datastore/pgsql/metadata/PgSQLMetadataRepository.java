@@ -27,7 +27,6 @@ import it.extrared.registry.jsonschema.Schema;
 import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.DPPMetadataEntry;
 import it.extrared.registry.metadata.DPPMetadataRepository;
-import it.extrared.registry.utils.CommonUtils;
 import it.extrared.registry.utils.JsonUtils;
 import it.extrared.registry.utils.SQLClientUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -52,21 +51,47 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
 
     private static final String INSERT =
             """
-            INSERT INTO dpp_metadata (registry_id,created_at,modified_at,metadata)
-            VALUES($1,$2,$3,$4)
+            INSERT INTO dpp_metadata (registry_id,created_at,modified_at,metadata,dpp_hash,dpp_content_type)
+            VALUES($1,$2,$3,$4,$5,$6)
             """;
 
     private static final String UPDATE =
             """
-            UPDATE dpp_metadata SET modified_at=$1, metadata=$2 WHERE
-            metadata ->> '%s' = $3
+            UPDATE dpp_metadata SET modified_at=$1, metadata=$2, dpp_hash=$3, dpp_content_type=$4 WHERE
+            metadata ->> '%s' = $5
             """;
+
+    @Override
+    public Uni<DPPMetadataEntry> findByRegistryIdAndReoId(
+            SqlConnection conn, String registryId, String reoId) {
+        String sql =
+                        """
+        SELECT *
+        FROM dpp_metadata WHERE registry_id = $1 AND metadata ->> '%s' = $2 ORDER BY modified_at DESC LIMIT 1
+        """
+                        .formatted(config.reoidFieldName());
+        debug(LOG, () -> "Executing query %s".formatted(sql));
+        Uni<RowSet<DPPMetadataEntry>> rs =
+                conn.preparedQuery(sql)
+                        .mapping(r -> ROW_MAPPER.apply(r, AS_JSON_META))
+                        .execute(Tuple.of(registryId, reoId));
+        Uni<DPPMetadataEntry> result =
+                rs.map(SQLClientUtils::firstOrNull)
+                        .invoke(
+                                m ->
+                                        debug(
+                                                LOG,
+                                                () ->
+                                                        "Retrieved metadata by registry id %s is %s"
+                                                                .formatted(registryId, m)));
+        return result;
+    }
 
     @Override
     public Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi) {
         String sql =
                         """
-                SELECT registry_id,metadata,created_at,modified_at
+                SELECT *
                 FROM dpp_metadata WHERE metadata ->> '%s' = $1 ORDER BY created_at DESC LIMIT 1
                 """
                         .formatted(config.upiFieldName());
@@ -89,7 +114,7 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
     public Uni<DPPMetadataEntry> findBy(SqlConnection conn, List<Tuple2<String, Object>> filters) {
         String sql =
                 """
-                SELECT registry_id,metadata,created_at,modified_at
+                SELECT *
                 FROM dpp_metadata WHERE %s ORDER BY created_at DESC LIMIT 1
                 """;
         List<Object> params = filters.stream().map(Tuple2::getItem2).toList();
@@ -138,7 +163,6 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
     @Override
     public Uni<DPPMetadataEntry> save(SqlConnection conn, DPPMetadataEntry metadata) {
         debug(LOG, () -> "Persisting a metadata entry %s".formatted(metadata));
-        metadata.setRegistryId(CommonUtils.generateTimeBasedUUID());
         Uni<RowSet<Row>> row =
                 conn.preparedQuery(INSERT)
                         .execute(
@@ -146,7 +170,9 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
                                         metadata.getRegistryId(),
                                         metadata.getCreatedAt(),
                                         metadata.getModifiedAt(),
-                                        JsonUtils.toVertxJson(metadata.getMetadata())));
+                                        JsonUtils.toVertxJson(metadata.getMetadata()),
+                                        metadata.getDppHash(),
+                                        metadata.getContentType()));
         return row.map(r -> metadata)
                 .invoke(
                         m ->
@@ -168,6 +194,8 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
                                 Tuple.of(
                                         metadata.getModifiedAt(),
                                         JsonUtils.toVertxJson(metadata.getMetadata()),
+                                        metadata.getDppHash(),
+                                        metadata.getContentType(),
                                         upi));
         return row.map(r -> metadata)
                 .invoke(

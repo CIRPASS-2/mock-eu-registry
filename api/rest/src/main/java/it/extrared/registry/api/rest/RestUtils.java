@@ -18,8 +18,17 @@ package it.extrared.registry.api.rest;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.RestResponse;
 
+/** Utility class providing helper methods for building JAX-RS REST responses. */
 public class RestUtils {
 
+    /**
+     * Builds a {@link RestResponse} with the given HTTP status code and response body.
+     *
+     * @param <T> the type of the response entity.
+     * @param status the HTTP status to set on the response.
+     * @param body the entity to include in the response body.
+     * @return a {@link RestResponse} carrying {@code body} with {@code status}.
+     */
     public static <T> RestResponse<T> respWithBodyAndStatus(Response.Status status, T body) {
         RestResponse.ResponseBuilder<T> builder = RestResponse.ResponseBuilder.create(status);
         return builder.entity(body).build();

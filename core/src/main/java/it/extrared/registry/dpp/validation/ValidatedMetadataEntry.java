@@ -23,11 +23,25 @@ public class ValidatedMetadataEntry extends DPPMetadataEntry {
 
     private ValidationReport validation;
 
+    /**
+     * Constructs a {@code ValidatedMetadataEntry} from raw metadata and a validation report.
+     *
+     * @param metadata the DPP metadata payload.
+     * @param validation the {@link ValidationReport} produced by the DPP validator.
+     */
     public ValidatedMetadataEntry(JsonNode metadata, ValidationReport validation) {
         super(metadata);
         this.validation = validation;
     }
 
+    /**
+     * Constructs a {@code ValidatedMetadataEntry} by decorating an existing {@link
+     * DPPMetadataEntry} with a validation report. All fields from {@code baseEntry} are copied into
+     * this instance.
+     *
+     * @param baseEntry the persisted metadata entry to decorate.
+     * @param report the {@link ValidationReport} produced by the DPP validator.
+     */
     public ValidatedMetadataEntry(DPPMetadataEntry baseEntry, ValidationReport report) {
         super(baseEntry.getMetadata());
         setRegistryId(baseEntry.getRegistryId());
@@ -36,6 +50,7 @@ public class ValidatedMetadataEntry extends DPPMetadataEntry {
         setValidation(report);
     }
 
+    /** Default no-arg constructor for deserialization frameworks. */
     public ValidatedMetadataEntry() {}
 
     public ValidationReport getValidation() {

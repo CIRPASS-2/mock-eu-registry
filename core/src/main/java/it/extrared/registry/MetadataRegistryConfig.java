@@ -79,10 +79,34 @@ public interface MetadataRegistryConfig {
     String reoidClaimName();
 
     /**
+     * @return the name of the claim of the JWT from which retrieve the reoName.
+     */
+    @WithDefault("reoName")
+    String reoNameClaimName();
+
+    /**
      * @return the field name of the live url in the JSON. Default is liveUrl.
      */
     @WithDefault("liveURL")
     String liveUrlFieldName();
+
+    /**
+     * @return the field name of the modelUpi in the JSON. Default is modelUpi.
+     */
+    @WithDefault("modelUpi")
+    String modelUpiFieldName();
+
+    /**
+     * @return the field name of the batchUpi in the JSON. Default is batchUpi.
+     */
+    @WithDefault("batchUpi")
+    String batchUpiFieldName();
+
+    /**
+     * @return the field name of the commodityCode in the JSON. Default is commodityCode.
+     */
+    @WithDefault("commodityCode")
+    String commodityCodeFieldName();
 
     /**
      * @return true if the registry should try to validate the DPP data associated with the input
@@ -104,6 +128,44 @@ public interface MetadataRegistryConfig {
      * @return the location (URI,relative file path or HTTP URL) of a JSON Schema to be loaded.
      */
     Optional<String> jsonSchemaLocation();
+
+    /**
+     * @return the issuer value in the registration proof JWT
+     */
+    @WithDefault("http://localhost:8080")
+    String proofIssuer();
+
+    /**
+     * @return the keyId value for Jwks.
+     */
+    @WithDefault("mock-eu-registry-key-1")
+    String keyId();
+
+    /**
+     * @return jws configuration
+     */
+    Jws jws();
+
+    interface Jws {
+
+        /**
+         * @return true if detached jws is enabled, false otherwise.
+         */
+        @WithDefault("false")
+        boolean verificationEnabled();
+
+        /**
+         * @return the claim name where to find the jwks uri.
+         */
+        @WithDefault("jwksUri")
+        String jwksUriClaimName();
+
+        /**
+         * @return the http header name where to find the detached jws.
+         */
+        @WithDefault("x-jws-signature")
+        String headerName();
+    }
 
     class RolesMappingsConverter implements Converter<MultiMap<String, String>> {
 

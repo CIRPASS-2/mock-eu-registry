@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @TestProfile(MetadataAppendUpdatePropertyProfile.class)
-public class DppMetadataResourceAppendTest {
+public class DppMetadataResourceAppendTest extends TestSupport {
 
     private static final String METADATA_1 =
             """
@@ -35,7 +35,8 @@ public class DppMetadataResourceAppendTest {
                 "reoId":"12345",
                 "upi":"555666",
                 "commodityCode":"122267310",
-                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"]
+                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"],
+                "liveURL":"http://localhost:1111/dpp"
               }
             """;
 
@@ -44,25 +45,6 @@ public class DppMetadataResourceAppendTest {
             {
                 "reoId":"12345",
                 "upi":"555666",
-                "commodityCode":"233367221"
-              }
-            """;
-
-    private static final String METADATA_2 =
-            """
-            {
-                "reoId":"12345",
-                "upi":"555667",
-                "commodityCode":"122267310",
-                "dataCarrierTypes":["QR_CODE","DATA_MATRIX"]
-              }
-            """;
-
-    private static final String METADATA_UPD_2 =
-            """
-            {
-                "reoId":"12345",
-                "upi":"555667",
                 "commodityCode":"233367221"
               }
             """;

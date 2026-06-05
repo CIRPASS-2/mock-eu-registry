@@ -19,7 +19,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.quarkus.jackson.ObjectMapperCustomizer;
 
+/**
+ * Customizes the application-wide Jackson {@link ObjectMapper} by registering the {@link
+ * JavaTimeModule}, enabling serialization and deserialization of Java 8 date/time types (e.g.,
+ * {@link java.time.LocalDateTime}).
+ */
 public class RegistryObjectMapperCustomizer implements ObjectMapperCustomizer {
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Registers {@link JavaTimeModule} so that {@link java.time.LocalDateTime} and related types
+     * are serialized as ISO-8601 strings rather than numeric arrays.
+     */
     @Override
     public void customize(ObjectMapper objectMapper) {
         objectMapper.registerModule(new JavaTimeModule());
