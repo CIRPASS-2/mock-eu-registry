@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.ValidationMessage;
+import io.quarkus.runtime.util.StringUtil;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
@@ -41,6 +42,7 @@ import it.extrared.registry.security.UserAttributesAccessor;
 import it.extrared.registry.utils.CommonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +82,10 @@ public class DPPMetadataService {
                     if (node != null && !node.isNull() && node.isTextual()) return node.asText();
                     return null;
                 };
+        String reoName = attributesAccessor.getReoName();
+        if (StringUtil.isNullOrEmpty(reoName))
+            throw new InvalidOperationException(
+                    "No reo name available in authentication token. Cannot create the proof of registration");
 
         return Jwt.claims()
                 .claim("registryId", entry.getRegistryId())
@@ -90,9 +96,10 @@ public class DPPMetadataService {
                         config.reoidFromClaimEnabled()
                                 ? attributesAccessor.getReoId()
                                 : getFieldName.apply(config.reoidFieldName()))
-                .claim("reoName", attributesAccessor.getReoName())
+                .claim("reoName", reoName)
                 .claim("dppHash", entry.getDppHash())
                 .claim("dppContentType", entry.getContentType())
+                .expiresIn(Duration.ofDays(config.proofExpirationDays()))
                 .issuer(config.proofIssuer())
                 .jws()
                 .keyId(config.keyId())

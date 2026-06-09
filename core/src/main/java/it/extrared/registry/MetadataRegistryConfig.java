@@ -136,6 +136,12 @@ public interface MetadataRegistryConfig {
     String proofIssuer();
 
     /**
+     * @return the number of days after which the proof of registration expires.
+     */
+    @WithDefault("3650")
+    Long proofExpirationDays();
+
+    /**
      * @return the keyId value for Jwks.
      */
     @WithDefault("mock-eu-registry-key-1")
