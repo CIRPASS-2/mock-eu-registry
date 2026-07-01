@@ -39,7 +39,7 @@ public class PgSQLSchemaRepository implements JsonSchemaDBRepository {
     private static final String SELECT_MAX = "SELECT MAX(created_at) FROM json_schemas";
 
     private static final String SELECT_CURRENT =
-                    """
+            """
                             SELECT jschema.data_schema
                             FROM json_schemas jschema
                             WHERE created_at = (%s);
@@ -47,7 +47,7 @@ public class PgSQLSchemaRepository implements JsonSchemaDBRepository {
                     .formatted(SELECT_MAX);
 
     private static final String REMOVE_CURRENT =
-                    """
+            """
                             DELETE
                             FROM json_schemas
                             WHERE created_at = (%s);
