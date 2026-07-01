@@ -56,12 +56,12 @@ public class JsonUtils {
     }
 
     public static String getJsonFieldAsString(DPPMetadataEntry metadata, String fielName) {
-        String upi = null;
+        String value = null;
         JsonNode jMetadata = metadata.getMetadata();
         if (jMetadata != null) {
             JsonNode jsonNode = jMetadata.get(fielName);
-            if (jsonNode != null && !jsonNode.isNull()) upi = jsonNode.asText();
+            if (jsonNode != null && !jsonNode.isNull()) value = jsonNode.asText();
         }
-        return upi;
+        return value;
     }
 }
