@@ -34,7 +34,7 @@ import java.util.Objects;
 @Unremovable
 public class MockDPPMetadataRepository implements DPPMetadataRepository {
     private static final String METADATA_1 =
-                    """
+            """
             {
               "registryId":"%s",
               "createdAt":"2025-10-20 10:20:33",
@@ -50,7 +50,7 @@ public class MockDPPMetadataRepository implements DPPMetadataRepository {
             """
                     .formatted(CommonUtils.generateTimeBasedUUID());
     private static final String METADATA_2 =
-                    """
+            """
             {
               "registryId":"%s",
               "createdAt":"2025-10-21 11:30:43",

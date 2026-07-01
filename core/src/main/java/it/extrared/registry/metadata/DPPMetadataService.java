@@ -40,12 +40,14 @@ import it.extrared.registry.jsonschema.SchemaCache;
 import it.extrared.registry.metadata.update.DPPMetadataUpdater;
 import it.extrared.registry.security.UserAttributesAccessor;
 import it.extrared.registry.utils.CommonUtils;
+import it.extrared.registry.utils.JsonUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -188,6 +190,7 @@ public class DPPMetadataService {
 
     private Uni<? extends DPPMetadataEntry> doUpdate(
             DPPMetadataEntry modifier, DPPMetadataEntry modified, SqlConnection conn) {
+        checkReo(modified);
         modified.setModifiedAt(LocalDateTime.now());
         modified.setMetadata(
                 new JsonMerger()
@@ -196,6 +199,21 @@ public class DPPMetadataService {
                                 (ObjectNode) modifier.getMetadata()));
         Uni<DPPMetadataEntry> validated = generateHashAndApplyValidations(modified);
         return validated.flatMap(me -> updater.applyUpdate(config.updateStrategy(), conn, me));
+    }
+
+    private void checkReo(DPPMetadataEntry existing) {
+        if (config.reoidFromClaimEnabled()) {
+            String reoId = JsonUtils.getJsonFieldAsString(existing, config.reoidFieldName());
+            String tokenReoId = attributesAccessor.getReoId();
+            if (!Objects.equals(reoId, tokenReoId))
+                throw new InvalidOperationException(
+                        "DPP with upi '%s' is owned by REO '%s', cannot be updated by '%s'"
+                                .formatted(
+                                        JsonUtils.getJsonFieldAsString(
+                                                existing, config.upiFieldName()),
+                                        reoId,
+                                        tokenReoId));
+        }
     }
 
     private Uni<? extends DPPMetadataEntry> doSave(
