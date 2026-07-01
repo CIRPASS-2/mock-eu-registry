@@ -65,7 +65,7 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
     public Uni<DPPMetadataEntry> findByRegistryIdAndReoId(
             SqlConnection conn, String registryId, String reoId) {
         String sql =
-                        """
+                """
         SELECT *
         FROM dpp_metadata WHERE registry_id = $1 AND metadata ->> '%s' = $2 ORDER BY modified_at DESC LIMIT 1
         """
@@ -90,7 +90,7 @@ public class PgSQLMetadataRepository implements DPPMetadataRepository {
     @Override
     public Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi) {
         String sql =
-                        """
+                """
                 SELECT *
                 FROM dpp_metadata WHERE metadata ->> '%s' = $1 ORDER BY created_at DESC LIMIT 1
                 """

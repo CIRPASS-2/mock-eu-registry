@@ -79,7 +79,7 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     @Override
     public Uni<DPPMetadataEntry> findByUpi(SqlConnection conn, String upi) {
         String sql =
-                        """
+                """
                 SELECT *
                 FROM dpp_metadata WHERE JSON_VALUE(metadata,'$.%s') = ? ORDER BY created_at DESC LIMIT 1
                 """
@@ -103,7 +103,7 @@ public class MariaDBMetadataRepository implements DPPMetadataRepository {
     public Uni<DPPMetadataEntry> findByRegistryIdAndReoId(
             SqlConnection conn, String registryId, String reoId) {
         String sql =
-                        """
+                """
                 SELECT *
                 FROM dpp_metadata WHERE registry_id=? AND JSON_VALUE(metadata,'$.%s') = ? ORDER BY modified_at DESC LIMIT 1
                 """
