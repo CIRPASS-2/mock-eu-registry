@@ -78,7 +78,7 @@
     },
     "batchUpi": {
       "type": "string",
-      "description": "The UPI of the batch-level registry entry. Required when granularityLevel = ITEM",
+      "description": "The UPI of the batch-level registry entry. Required when granularityLevel = BATCH. For granularityLevel = ITEM it is optional: supply it only if the item is actually registered through an intermediate batch tier; omit it for items serialised directly from a model. Forbidden when granularityLevel = MODEL.",
       "minLength": 1,
       "maxLength": 200,
       "examples": ["urn:epc:id:sgtin:0614141.107346.2017"]
@@ -86,13 +86,13 @@
   },
   "allOf": [
     {
-      "comment": "ITEM: deactivated + modelUpi + batchUpi required; else deactivated forbidden",
+      "comment": "ITEM: deactivated + modelUpi required; batchUpi optional (only if a real batch tier exists). Non-ITEM: deactivated forbidden.",
       "if": {
         "properties": { "granularityLevel": { "const": "ITEM" } },
         "required": ["granularityLevel"]
       },
       "then": {
-        "required": ["deactivated", "modelUpi", "batchUpi"]
+        "required": ["deactivated", "modelUpi"]
       },
       "else": {
         "not": { "required": ["deactivated"] }
